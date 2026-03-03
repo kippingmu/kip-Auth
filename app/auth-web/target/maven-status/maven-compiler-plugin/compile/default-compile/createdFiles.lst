@@ -1,0 +1,6 @@
+xyz/kip/auth/KipAuthBootApplication.class
+xyz/kip/auth/interfaces/security/JwtAuthenticationEntryPoint.class
+xyz/kip/auth/interfaces/controller/UserAuthController.class
+xyz/kip/auth/interfaces/security/JwtAuthenticationFilter.class
+xyz/kip/auth/interfaces/advice/GlobalExceptionHandler.class
+xyz/kip/auth/interfaces/config/SecurityConfig.class

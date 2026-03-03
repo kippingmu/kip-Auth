@@ -1,0 +1,12 @@
+xyz/kip/auth/application/service/impl/UserAuthServiceImpl.class
+xyz/kip/auth/application/service/impl/BizInfoServiceImpl.class
+xyz/kip/auth/infrastructure/repository/InMemoryUserStore.class
+xyz/kip/auth/infrastructure/security/PasswordEncoder.class
+xyz/kip/auth/domain/model/BizInfoModel.class
+xyz/kip/auth/application/service/UserAuthService.class
+xyz/kip/auth/domain/model/UserAuthModel.class
+xyz/kip/auth/application/convert/BizConvert.class
+xyz/kip/auth/infrastructure/util/SnowFlakeUtil.class
+xyz/kip/auth/infrastructure/security/JwtUtil.class
+xyz/kip/auth/application/service/BizInfoService.class
+xyz/kip/auth/domain/model/BizLoginLogModel.class

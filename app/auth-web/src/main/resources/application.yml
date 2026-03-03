@@ -1,0 +1,46 @@
+server:
+  port: 5001
+
+spring:
+  application:
+    name: kip-auth-service
+  # 数据库配置 (根据实际需要配置)
+  datasource:
+    url: jdbc:mysql://localhost:3306/kip_auth?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+  cloud:
+    sentinel:
+      transport:
+        port: 8090
+      web-context-unify: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# 认证配置
+auth:
+  jwt:
+    # JWT密钥 (生产环境请修改为更强的密钥)
+    secret: KipAuthServiceSecretKeyMustBeAtLeast32CharactersLongForHS256
+    # token过期时间 (单位：毫秒，默认24小时)
+    expiration: 86400000
+    # token前缀
+    prefix: "Bearer "
+    # token header名
+    header: Authorization

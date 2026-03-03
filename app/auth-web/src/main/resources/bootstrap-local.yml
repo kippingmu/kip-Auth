@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: auth-app
+  cloud:
+    inetutils:
+      preferred-networks:
+        - 192.168
+    nacos:
+      discovery:
+        server-addr: 10.42.0.125:8848
+        namespace: b0f41471-49e1-48b1-83e8-002a807afc4c
+        group: DEFAULT_GROUP
+        weight: 1
+        metadata:
+          preserved.register.source: "SPRING_CLOUD"
+          version: 1.0.0
+      config:
+        server-addr: 10.42.0.125:8848
+        namespace: b0f41471-49e1-48b1-83e8-002a807afc4c
+        group: DEFAULT_GROUP
+        file-extension: yaml
+        prefix: auth-app

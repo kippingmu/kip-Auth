@@ -1,0 +1,5 @@
+xyz/kip/auth/common/UserAuthDTO.class
+xyz/kip/auth/common/LoginResponseDTO.class
+xyz/kip/auth/common/BizInfoDTO.class
+xyz/kip/auth/common/LoginRequestDTO.class
+xyz/kip/auth/common/RegisterRequestDTO.class
