@@ -1,0 +1,39 @@
+# MyBatis 配置
+mybatis:
+  # MyBatis 配置文件位置
+  config-location: classpath:mybatis-config.xml
+  # Mapper XML 文件位置
+  mapper-locations: classpath:mapper/*.xml
+  # 类型别名包
+  type-aliases-package: xyz.kip.auth.dal.entity
+  configuration:
+    # 驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 日志实现
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# 数据源配置
+spring:
+  datasource:
+    # 数据库连接信息
+    url: jdbc:mysql://localhost:3306/kip_auth?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: your_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    # HikariCP 连接池配置
+    hikari:
+      # 连接池名称
+      pool-name: KipAuthHikariCP
+      # 最小空闲连接数
+      minimum-idle: 5
+      # 最大连接数
+      maximum-pool-size: 20
+      # 连接超时时间(毫秒)
+      connection-timeout: 30000
+      # 空闲连接超时时间(毫秒)
+      idle-timeout: 600000
+      # 连接最大存活时间(毫秒)
+      max-lifetime: 1800000
+      # 连接测试查询
+      connection-test-query: SELECT 1

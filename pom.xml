@@ -32,6 +32,8 @@
         <spring.cloud.version>2025.0.0</spring.cloud.version>
         <cloud.alibaba.version>2025.0.0.0</cloud.alibaba.version>
         <nacos.client.version>3.0.3</nacos.client.version>
+        <!-- Pin MyBatis Spring Boot starter to a known version -->
+        <mybatis.spring.boot.version>3.0.2</mybatis.spring.boot.version>
     </properties>
 
     <dependencyManagement>
@@ -77,6 +79,12 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.20.0</version>
+            </dependency>
+            <!-- Centralize MyBatis starter version -->
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis.spring.boot.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

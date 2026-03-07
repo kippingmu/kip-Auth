@@ -1,2 +1,7 @@
-xyz/kip/auth/manager/domain/BizInfoDomain.class
+xyz/kip/auth/manager/cache/CacheManager.class
+xyz/kip/auth/manager/cache/CacheManagerExample.class
+xyz/kip/auth/manager/util/RedisKeyUtil.class
 xyz/kip/auth/manager/BizInfoManager.class
+xyz/kip/auth/manager/cache/impl/RedisCacheManager.class
+xyz/kip/auth/manager/config/RedisConfig.class
+xyz/kip/auth/manager/domain/BizInfoDomain.class

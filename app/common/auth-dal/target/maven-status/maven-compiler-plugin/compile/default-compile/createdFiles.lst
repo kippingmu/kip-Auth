@@ -1,0 +1,6 @@
+xyz/kip/auth/dal/entity/BizInfoEntity.class
+xyz/kip/auth/dal/mapper/UserMapper.class
+xyz/kip/auth/dal/entity/UserEntity.class
+xyz/kip/auth/dal/entity/RoleEntity.class
+xyz/kip/auth/dal/mapper/RoleMapper.class
+xyz/kip/auth/dal/mapper/BizInfoMapper.class

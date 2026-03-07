@@ -20,11 +20,18 @@
     </properties>
     <dependencies>
 
-        <!-- Redis -->
+        <!-- Spring Data Redis (Lettuce 客户端) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+        <!-- Redisson 高级功能（分布式锁、队列等，可选） -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>4.3.0</version>
+        </dependency>
+
         <!-- 本地依赖 -->
         <dependency>
             <groupId>xyz.kip</groupId>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.kip.auth.dal.mapper.RoleMapper">
+
+    <resultMap id="BaseResultMap" type="xyz.kip.auth.dal.entity.RoleEntity">
+        <id column="id" property="id"/>
+        <result column="role_id" property="roleId"/>
+        <result column="role_code" property="roleCode"/>
+        <result column="role_name" property="roleName"/>
+        <result column="tenant_id" property="tenantId"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="update_by" property="updateBy"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, role_id, role_code, role_name, tenant_id, status, remark,
+        create_time, update_time, create_by, update_by
+    </sql>
+
+    <select id="selectByRoleId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM auth_role
+        WHERE role_id = #{roleId}
+    </select>
+
+    <select id="selectByRoleCodeAndTenant" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM auth_role
+        WHERE role_code = #{roleCode} AND tenant_id = #{tenantId}
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT
+        r.id, r.role_id, r.role_code, r.role_name, r.tenant_id, r.status, r.remark,
+        r.create_time, r.update_time, r.create_by, r.update_by
+        FROM auth_role r
+        INNER JOIN auth_user_role ur ON r.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+    </select>
+
+    <insert id="insert" parameterType="xyz.kip.auth.dal.entity.RoleEntity">
+        INSERT INTO auth_role (
+            role_id, role_code, role_name, tenant_id, status, remark,
+            create_by, update_by
+        ) VALUES (
+            #{roleId}, #{roleCode}, #{roleName}, #{tenantId}, #{status}, #{remark},
+            #{createBy}, #{updateBy}
+        )
+    </insert>
+
+    <update id="update" parameterType="xyz.kip.auth.dal.entity.RoleEntity">
+        UPDATE auth_role
+        <set>
+            <if test="roleCode != null">role_code = #{roleCode},</if>
+            <if test="roleName != null">role_name = #{roleName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+        </set>
+        WHERE role_id = #{roleId}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE auth_role
+        SET status = #{status}, update_by = #{updateBy}
+        WHERE role_id = #{roleId}
+    </update>
+
+    <delete id="deleteByRoleId">
+        DELETE FROM auth_role WHERE role_id = #{roleId}
+    </delete>
+
+    <select id="selectByTenantId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM auth_role
+        WHERE tenant_id = #{tenantId}
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

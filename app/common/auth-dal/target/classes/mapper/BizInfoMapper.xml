@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.kip.auth.dal.mapper.BizInfoMapper">
+
+    <resultMap id="BaseResultMap" type="xyz.kip.auth.dal.entity.BizInfoEntity">
+        <id column="id" property="id"/>
+        <result column="biz_code" property="bizCode"/>
+        <result column="biz_name" property="bizName"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="password" property="password"/>
+        <result column="salt" property="salt"/>
+        <result column="tenant_id" property="tenantId"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="update_by" property="updateBy"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, biz_code, biz_name, phone, email, password, salt, tenant_id, status, remark,
+        create_time, update_time, create_by, update_by
+    </sql>
+
+    <select id="selectByBizCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM auth_biz_info
+        WHERE biz_code = #{bizCode}
+    </select>
+
+    <select id="selectByPhoneAndTenant" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM auth_biz_info
+        WHERE phone = #{phone} AND tenant_id = #{tenantId}
+    </select>
+
+    <insert id="insert" parameterType="xyz.kip.auth.dal.entity.BizInfoEntity">
+        INSERT INTO auth_biz_info (
+            biz_code, biz_name, phone, email, password, salt, tenant_id, status, remark,
+            create_by, update_by
+        ) VALUES (
+            #{bizCode}, #{bizName}, #{phone}, #{email}, #{password}, #{salt},
+            #{tenantId}, #{status}, #{remark}, #{createBy}, #{updateBy}
+        )
+    </insert>
+
+    <update id="update" parameterType="xyz.kip.auth.dal.entity.BizInfoEntity">
+        UPDATE auth_biz_info
+        <set>
+            <if test="bizName != null">biz_name = #{bizName},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+        </set>
+        WHERE biz_code = #{bizCode}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE auth_biz_info
+        SET status = #{status}, update_by = #{updateBy}
+        WHERE biz_code = #{bizCode}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE auth_biz_info
+        SET password = #{password}, salt = #{salt}, update_by = #{updateBy}
+        WHERE biz_code = #{bizCode}
+    </update>
+
+    <delete id="deleteByBizCode">
+        DELETE FROM auth_biz_info WHERE biz_code = #{bizCode}
+    </delete>
+
+    <select id="selectByTenantId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM auth_biz_info
+        WHERE tenant_id = #{tenantId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="countByTenantId" resultType="int">
+        SELECT COUNT(*) FROM auth_biz_info WHERE tenant_id = #{tenantId}
+    </select>
+
+</mapper>
