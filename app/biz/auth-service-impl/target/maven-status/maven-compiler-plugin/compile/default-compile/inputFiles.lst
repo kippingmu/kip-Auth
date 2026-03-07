@@ -10,5 +10,5 @@
 /Users/xiaoshichuan/ide/idea/kip-Auth/app/biz/auth-service-impl/src/main/java/xyz/kip/service/model/RegisterRequestModel.java
 /Users/xiaoshichuan/ide/idea/kip-Auth/app/biz/auth-service-impl/src/main/java/xyz/kip/service/model/UserAuthModel.java
 /Users/xiaoshichuan/ide/idea/kip-Auth/app/biz/auth-service-impl/src/main/java/xyz/kip/service/repository/InMemoryUserStore.java
-/Users/xiaoshichuan/ide/idea/kip-Auth/app/biz/auth-service-impl/src/main/java/xyz/kip/service/security/JwtUtil.java
-/Users/xiaoshichuan/ide/idea/kip-Auth/app/biz/auth-service-impl/src/main/java/xyz/kip/service/security/PasswordEncoder.java
+/Users/xiaoshichuan/ide/idea/kip-Auth/app/biz/auth-service-impl/src/main/java/xyz/kip/service/utils/JwtUtil.java
+/Users/xiaoshichuan/ide/idea/kip-Auth/app/biz/auth-service-impl/src/main/java/xyz/kip/service/utils/PasswordEncoder.java

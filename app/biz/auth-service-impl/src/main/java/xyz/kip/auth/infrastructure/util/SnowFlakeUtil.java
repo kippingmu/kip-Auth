@@ -44,8 +44,24 @@ public class SnowFlakeUtil {
     /**
      * 机器标识
      */
-    @Value("${config.machineId}")
     private static long machineId;
+
+    /**
+     * 号段前缀（字符串），用于与雪花ID拼接组成业务ID
+     * 例如：业务线/租户/环境号段等。
+     */
+    private static String idSegmentPrefix = "";
+
+    /**
+     * 通过构造器注入配置，避免静态字段无法注入的问题
+     */
+    public SnowFlakeUtil(
+            @Value("${config.machineId:1}") long machineIdProp,
+            @Value("${config.idSegment:}") String segmentProp
+    ) {
+        machineId = machineIdProp & MAX_MACHINE_NUM;
+        idSegmentPrefix = segmentProp == null ? "" : segmentProp.trim();
+    }
 
     /**
      * 序列号
@@ -56,18 +72,6 @@ public class SnowFlakeUtil {
      * 上一次时间戳
      */
     private static long lastStamp = -1L;
-
-    /**
-     * 构造方法
-     * @param machineId 机器ID
-     */
-    /*public SnowFlakeUtil(long machineId) {
-        machineId = 0;
-        if (machineId > MAX_MACHINE_NUM || machineId < 0) {
-            throw new RuntimeException("机器超过最大数量");
-        }
-        this.machineId = machineId;
-    }*/
 
     /**
      * 产生下一个ID
@@ -89,9 +93,24 @@ public class SnowFlakeUtil {
             sequence = 0L;
         }
         lastStamp = currStamp;
-        return (currStamp - START_STAMP) << TIMESTAMP_LEFT  // 时间戳部分
-            | machineId << MACHINE_LEFT                     // 机器标识部分
-            | sequence;                                     // 序列号部
+        // 时间戳部分 | 机器标识部分 | 序列号部分
+        return (currStamp - START_STAMP) << TIMESTAMP_LEFT
+                | machineId << MACHINE_LEFT
+                | sequence;
+    }
+
+    /**
+     * 生成 号段 + 雪花 的字符串ID。
+     * 号段来自配置项 config.idSegment，可为空；当为空时仅返回雪花ID字符串。
+     *
+     * 示例：idSegment=1001，返回 "1001" + snowflakeId。
+     */
+    public static String nextSegmentId() {
+        long snowflake = nextId();
+        if (idSegmentPrefix == null || idSegmentPrefix.isEmpty()) {
+            return String.valueOf(snowflake);
+        }
+        return idSegmentPrefix + snowflake;
     }
 
     private static long getNextMill() {

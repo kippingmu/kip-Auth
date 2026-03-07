@@ -46,9 +46,28 @@ public class UserAuthController {
      */
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody LoginRequestRequest loginRequest) {
-        LoginRequestModel loginRequestModel = new LoginRequestModel();
-        Result<LoginResponseModel> login = userAuthService.login(loginRequestModel);
-        return Result.success(new LoginResponse());
+        LoginRequestModel model = new LoginRequestModel();
+        model.setUsername(loginRequest.getUsername());
+        model.setPassword(loginRequest.getPassword());
+        model.setVerifyCode(loginRequest.getVerifyCode());
+        model.setTenantId(loginRequest.getTenantId());
+
+        Result<LoginResponseModel> res = userAuthService.login(model);
+        if (!res.isSuccess() || res.getResult() == null) {
+            return Result.failure(res.getMessage());
+        }
+
+        LoginResponseModel m = res.getResult();
+        LoginResponse out = new LoginResponse();
+        out.setUserId(m.getUserId());
+        out.setUsername(m.getUsername());
+        out.setEmail(m.getEmail());
+        out.setPhone(m.getPhone());
+        out.setNickname(m.getNickname());
+        out.setToken(m.getToken());
+        out.setTokenType(m.getTokenType());
+        out.setExpiresIn(m.getExpiresIn());
+        return Result.success(out);
     }
 
     /**
@@ -59,10 +78,31 @@ public class UserAuthController {
      */
     @PostMapping("/register")
     public Result<UserAuthRequest> register(@RequestBody RegisterRequest registerRequest) {
-        RegisterRequestModel registerRequestModel = new RegisterRequestModel();
+        RegisterRequestModel model = new RegisterRequestModel();
+        model.setUsername(registerRequest.getUsername());
+        model.setPassword(registerRequest.getPassword());
+        model.setConfirmPassword(registerRequest.getConfirmPassword());
+        model.setEmail(registerRequest.getEmail());
+        model.setPhone(registerRequest.getPhone());
+        model.setNickname(registerRequest.getNickname());
+        model.setVerifyCode(registerRequest.getVerifyCode());
+        model.setTenantId(registerRequest.getTenantId());
 
-        userAuthService.register(registerRequestModel);
-        return Result.success(new UserAuthRequest());
+        Result<UserAuthModel> res = userAuthService.register(model);
+        if (!res.isSuccess() || res.getResult() == null) {
+            return Result.failure(res.getMessage());
+        }
+
+        UserAuthModel m = res.getResult();
+        UserAuthRequest out = new UserAuthRequest();
+        out.setUserId(m.getUserId());
+        out.setUsername(m.getUsername());
+        out.setEmail(m.getEmail());
+        out.setPhone(m.getPhone());
+        out.setNickname(m.getNickname());
+        out.setStatus(m.getStatus());
+        out.setTenantId(m.getTenantId());
+        return Result.success(out);
     }
 
     /**
@@ -176,9 +216,20 @@ public class UserAuthController {
      */
     @GetMapping("/user/{userId}")
     public Result<UserAuthResponse> getUser(@PathVariable String userId) {
-        userAuthService.queryByUserId(userId);
-        UserAuthResponse userAuthResponse = new UserAuthResponse();
-        return Result.success(new UserAuthResponse());
+        Result<UserAuthModel> res = userAuthService.queryByUserId(userId);
+        if (!res.isSuccess() || res.getResult() == null) {
+            return Result.failure(res.getMessage());
+        }
+        UserAuthModel m = res.getResult();
+        UserAuthResponse out = new UserAuthResponse();
+        out.setUserId(m.getUserId());
+        out.setUsername(m.getUsername());
+        out.setEmail(m.getEmail());
+        out.setPhone(m.getPhone());
+        out.setNickname(m.getNickname());
+        out.setStatus(m.getStatus());
+        out.setTenantId(m.getTenantId());
+        return Result.success(out);
 
     }
 
@@ -190,9 +241,20 @@ public class UserAuthController {
      */
     @GetMapping("/user/name/{username}")
     public Result<UserAuthResponse> getUserByName(@PathVariable String username) {
-        userAuthService.queryByUsername(username);
-        UserAuthResponse userAuthResponse = new UserAuthResponse();
-        return Result.success(new UserAuthResponse());
+        Result<UserAuthModel> res = userAuthService.queryByUsername(username);
+        if (!res.isSuccess() || res.getResult() == null) {
+            return Result.failure(res.getMessage());
+        }
+        UserAuthModel m = res.getResult();
+        UserAuthResponse out = new UserAuthResponse();
+        out.setUserId(m.getUserId());
+        out.setUsername(m.getUsername());
+        out.setEmail(m.getEmail());
+        out.setPhone(m.getPhone());
+        out.setNickname(m.getNickname());
+        out.setStatus(m.getStatus());
+        out.setTenantId(m.getTenantId());
+        return Result.success(out);
     }
 
     /**
@@ -203,9 +265,16 @@ public class UserAuthController {
      */
     @PutMapping("/user")
     public Result<Boolean> updateUser(@RequestBody UserAuthRequest userAuth) {
-        UserAuthModel userAuthModel = new UserAuthModel();
-        userAuthService.updateUser(new UserAuthModel());
-        return Result.success(true);
+        UserAuthModel m = new UserAuthModel();
+        m.setUserId(userAuth.getUserId());
+        m.setUsername(userAuth.getUsername());
+        m.setEmail(userAuth.getEmail());
+        m.setPhone(userAuth.getPhone());
+        m.setNickname(userAuth.getNickname());
+        m.setStatus(userAuth.getStatus());
+        m.setTenantId(userAuth.getTenantId());
+        // 密码若需要更新应走 change/reset 端点
+        return userAuthService.updateUser(m);
 
     }
 

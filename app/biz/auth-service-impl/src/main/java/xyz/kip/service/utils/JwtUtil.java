@@ -1,4 +1,4 @@
-package xyz.kip.service.security;
+package xyz.kip.service.utils;
 
 
 import io.jsonwebtoken.Claims;
@@ -17,6 +17,7 @@ import java.util.Map;
 
 /**
  * JWT 工具类
+ *
  * @author xiaoshichuan
  * @version 2026-02-28
  */
@@ -31,7 +32,8 @@ public class JwtUtil {
 
     /**
      * 生成JWT token
-     * @param userId 用户ID
+     *
+     * @param userId   用户ID
      * @param username 用户名
      * @return token
      */
@@ -41,9 +43,10 @@ public class JwtUtil {
 
     /**
      * 生成JWT token
-     * @param userId 用户ID
+     *
+     * @param userId   用户ID
      * @param username 用户名
-     * @param claims 额外声明
+     * @param claims   额外声明
      * @return token
      */
     public String generateToken(String userId, String username, Map<String, Object> claims) {
@@ -54,7 +57,8 @@ public class JwtUtil {
 
     /**
      * 创建token
-     * @param claims 声明
+     *
+     * @param claims  声明
      * @param subject 主题
      * @return token
      */
@@ -75,6 +79,7 @@ public class JwtUtil {
 
     /**
      * 验证JWT token
+     *
      * @param token token
      * @return 是否有效
      */
@@ -93,6 +98,7 @@ public class JwtUtil {
 
     /**
      * 从token中获取用户ID
+     *
      * @param token token
      * @return 用户ID
      */
@@ -106,6 +112,7 @@ public class JwtUtil {
 
     /**
      * 从token中获取用户名
+     *
      * @param token token
      * @return 用户名
      */
@@ -119,6 +126,7 @@ public class JwtUtil {
 
     /**
      * 获取token中的所有声明
+     *
      * @param token token
      * @return 声明
      */
@@ -137,6 +145,7 @@ public class JwtUtil {
 
     /**
      * 获取token过期时间（秒）
+     *
      * @return 过期时间
      */
     public Long getExpiresIn() {

@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 import xyz.kip.service.model.UserAuthModel;
-import xyz.kip.service.security.PasswordEncoder;
+import xyz.kip.service.utils.PasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;

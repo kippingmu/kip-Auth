@@ -5,7 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import xyz.kip.service.security.JwtUtil;
+import xyz.kip.service.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 
 import jakarta.servlet.FilterChain;

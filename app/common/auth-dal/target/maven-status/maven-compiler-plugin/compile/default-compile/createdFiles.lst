@@ -3,4 +3,5 @@ xyz/kip/auth/dal/mapper/UserMapper.class
 xyz/kip/auth/dal/entity/UserEntity.class
 xyz/kip/auth/dal/entity/RoleEntity.class
 xyz/kip/auth/dal/mapper/RoleMapper.class
+xyz/kip/auth/dal/config/MyBatisConfig.class
 xyz/kip/auth/dal/mapper/BizInfoMapper.class
