@@ -20,6 +20,12 @@
     </properties>
 
     <dependencies>
+        <!-- Jackson - JSON 处理 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>xyz.kip</groupId>
             <artifactId>kip-open-common</artifactId>

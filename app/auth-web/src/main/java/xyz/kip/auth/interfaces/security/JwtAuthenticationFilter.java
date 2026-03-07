@@ -5,7 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import xyz.kip.auth.infrastructure.security.JwtUtil;
+import xyz.kip.service.security.JwtUtil;
 import io.jsonwebtoken.Claims;
 
 import jakarta.servlet.FilterChain;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 /**
  * JWT 认证过滤器
+ *
  * @author xiaoshichuan
  * @version 2026-02-28
  */
@@ -25,6 +26,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Resource
     private JwtUtil jwtUtil;
 
+    /**
+     * 过滤器执行逻辑
+     * 1. 从请求中提取JWT token
+     * 2. 验证token有效性
+     * 3. 从token中提取用户信息并设置到SecurityContext中
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {

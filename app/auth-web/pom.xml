@@ -52,28 +52,25 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Spring Cloud Nacos 服务发现 -->
+        <!-- Nacos-discovery 服务发现注册 -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
-
-        <!-- Spring Cloud Nacos 配置管理 -->
+        <!-- Nacos-config 服务配置管理-->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
-
-        <!-- Sentinel 熔断限流 -->
-        <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
-        </dependency>
-
         <!-- Actuator 监控与健康检查 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Sentinel 熔断限流 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
         </dependency>
 
         <!-- 校验器 -->
@@ -82,34 +79,9 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- 引导上下文（加载 bootstrap 配置） -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-bootstrap</artifactId>
-        </dependency>
-
-        <!-- 本地模块依赖 -->
-        <dependency>
-            <groupId>xyz.kip</groupId>
-            <artifactId>auth-service-impl</artifactId>
-            <version>${app.version}</version>
-        </dependency>
 
 
 
-
-        <!-- Jackson - JSON 处理 -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
-        <!-- Lombok 依赖（可选） -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
 
         <!-- 测试依赖 -->
         <dependency>
@@ -121,6 +93,12 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- 本地模块依赖 -->
+        <dependency>
+            <groupId>xyz.kip</groupId>
+            <artifactId>auth-service-impl</artifactId>
         </dependency>
     </dependencies>
 

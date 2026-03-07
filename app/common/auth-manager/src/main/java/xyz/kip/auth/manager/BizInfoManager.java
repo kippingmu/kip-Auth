@@ -8,5 +8,10 @@ import xyz.kip.open.common.base.Result;
  * @author xiaoshichuan
  */
 public interface BizInfoManager {
+    /**
+     * Query business info by biz code.
+     * @param bizCode Business code.
+     * @return result
+     */
     Result<BizInfoDomain> queryByBizCode(String bizCode);
 }

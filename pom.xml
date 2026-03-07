@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -51,9 +51,27 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- 本地依赖管理 -->
             <dependency>
                 <groupId>xyz.kip</groupId>
-                <artifactId>gateway-common</artifactId>
+                <artifactId>auth-service-impl</artifactId>
+                <version>${app.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xyz.kip</groupId>
+                <artifactId>auth-manager</artifactId>
+                <version>${app.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xyz.kip</groupId>
+                <artifactId>auth-common</artifactId>
+                <version>${app.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xyz.kip</groupId>
+                <artifactId>auth-dal</artifactId>
+                <version>${app.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

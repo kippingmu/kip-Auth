@@ -5,14 +5,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import xyz.kip.auth.interfaces.security.JwtAuthenticationFilter;
 import xyz.kip.auth.interfaces.security.JwtAuthenticationEntryPoint;
+import xyz.kip.auth.interfaces.security.JwtAuthenticationFilter;
 
 /**
  * Spring Security 配置
+ *
  * @author xiaoshichuan
  * @version 2026-02-28
  */
@@ -33,15 +35,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 禁用CSRF
-                .csrf().disable()
-                // 设置无状态session
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                // 异常处理
-                .exceptionHandling()
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint())
-                .and()
+                // 禁用CSRF（新版 DSL）
+                .csrf(AbstractHttpConfigurer::disable)
+                // 设置无状态 session（新版 DSL）
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // 异常处理（新版 DSL，替代无参 exceptionHandling()）
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint()))
                 // 权限配置
                 .authorizeHttpRequests(authz -> authz
                         // 不需要认证的端点
@@ -58,4 +57,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }
