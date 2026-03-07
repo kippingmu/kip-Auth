@@ -1,4 +1,4 @@
-package xyz.kip.service.utils;
+package xyz.kip.auth.service.utils;
 
 
 import io.jsonwebtoken.Claims;

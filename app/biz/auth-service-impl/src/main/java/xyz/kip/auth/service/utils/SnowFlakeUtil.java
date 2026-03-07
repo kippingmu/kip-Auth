@@ -1,4 +1,4 @@
-package xyz.kip.auth.infrastructure.util;
+package xyz.kip.auth.service.utils;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -55,10 +55,8 @@ public class SnowFlakeUtil {
     /**
      * 通过构造器注入配置，避免静态字段无法注入的问题
      */
-    public SnowFlakeUtil(
-            @Value("${config.machineId:1}") long machineIdProp,
-            @Value("${config.idSegment:}") String segmentProp
-    ) {
+    public SnowFlakeUtil(@Value("${config.machineId:1}") long machineIdProp,
+                         @Value("${config.idSegment:}") String segmentProp) {
         machineId = machineIdProp & MAX_MACHINE_NUM;
         idSegmentPrefix = segmentProp == null ? "" : segmentProp.trim();
     }
@@ -102,7 +100,7 @@ public class SnowFlakeUtil {
     /**
      * 生成 号段 + 雪花 的字符串ID。
      * 号段来自配置项 config.idSegment，可为空；当为空时仅返回雪花ID字符串。
-     *
+     * <p>
      * 示例：idSegment=1001，返回 "1001" + snowflakeId。
      */
     public static String nextSegmentId() {

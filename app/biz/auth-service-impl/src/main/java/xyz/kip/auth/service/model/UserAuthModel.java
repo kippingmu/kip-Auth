@@ -1,15 +1,20 @@
-package xyz.kip.service.model;
+package xyz.kip.auth.service.model;
 
 import xyz.kip.open.common.base.ToString;
 
 /**
- * 注册请求DTO
+ * 用户认证信息DTO
  * @author xiaoshichuan
  * @version 2026-02-28
  */
-public class RegisterRequestModel extends ToString {
+public class UserAuthModel extends ToString {
     /**
-     * 用户名
+     * 用户ID
+     */
+    private String userId;
+
+    /**
+     * 用户名/手机号
      */
     private String username;
 
@@ -17,11 +22,6 @@ public class RegisterRequestModel extends ToString {
      * 密码
      */
     private String password;
-
-    /**
-     * 确认密码
-     */
-    private String confirmPassword;
 
     /**
      * 邮箱
@@ -39,14 +39,22 @@ public class RegisterRequestModel extends ToString {
     private String nickname;
 
     /**
-     * 验证码
+     * 账号状态：0-禁用，1-启用
      */
-    private String verifyCode;
+    private Integer status;
 
     /**
      * 租户ID
      */
     private String tenantId;
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     public String getUsername() {
         return username;
@@ -62,14 +70,6 @@ public class RegisterRequestModel extends ToString {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getConfirmPassword() {
-        return confirmPassword;
-    }
-
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
     }
 
     public String getEmail() {
@@ -96,12 +96,12 @@ public class RegisterRequestModel extends ToString {
         this.nickname = nickname;
     }
 
-    public String getVerifyCode() {
-        return verifyCode;
+    public Integer getStatus() {
+        return status;
     }
 
-    public void setVerifyCode(String verifyCode) {
-        this.verifyCode = verifyCode;
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
     public String getTenantId() {

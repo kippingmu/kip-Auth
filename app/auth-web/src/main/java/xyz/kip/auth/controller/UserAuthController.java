@@ -17,12 +17,12 @@ import xyz.kip.auth.resonse.LoginResponse;
 import xyz.kip.auth.resonse.RegisterRequest;
 import xyz.kip.auth.request.UserAuthRequest;
 import xyz.kip.auth.resonse.UserAuthResponse;
-import xyz.kip.service.UserAuthService;
+import xyz.kip.auth.service.UserAuthService;
 import xyz.kip.open.common.base.Result;
-import xyz.kip.service.model.LoginRequestModel;
-import xyz.kip.service.model.LoginResponseModel;
-import xyz.kip.service.model.RegisterRequestModel;
-import xyz.kip.service.model.UserAuthModel;
+import xyz.kip.auth.service.model.LoginRequestModel;
+import xyz.kip.auth.service.model.LoginResponseModel;
+import xyz.kip.auth.service.model.RegisterRequestModel;
+import xyz.kip.auth.service.model.UserAuthModel;
 
 /**
  * 用户认证控制器

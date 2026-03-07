@@ -1,7 +1,7 @@
-package xyz.kip.service.convert;
+package xyz.kip.auth.service.convert;
 
 import xyz.kip.auth.manager.domain.BizInfoDomain;
-import xyz.kip.service.model.BizInfoModel;
+import xyz.kip.auth.service.model.BizInfoModel;
 
 /**
  * @author xiaoshichuan

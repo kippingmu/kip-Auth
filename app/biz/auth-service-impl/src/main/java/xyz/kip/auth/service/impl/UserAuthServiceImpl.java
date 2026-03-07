@@ -1,19 +1,18 @@
-package xyz.kip.service.impl;
+package xyz.kip.auth.service.impl;
 
 import jakarta.annotation.Resource;
 import xyz.kip.open.common.base.Result;
 import org.springframework.stereotype.Service;
 
-import xyz.kip.service.UserAuthService;
+import xyz.kip.auth.service.UserAuthService;
 
-import xyz.kip.service.model.LoginRequestModel;
-import xyz.kip.service.model.LoginResponseModel;
-import xyz.kip.service.model.RegisterRequestModel;
-import xyz.kip.service.model.UserAuthModel;
-import xyz.kip.service.utils.JwtUtil;
-import xyz.kip.service.utils.PasswordEncoder;
-import xyz.kip.auth.infrastructure.util.SnowFlakeUtil;
-import xyz.kip.service.repository.InMemoryUserStore;
+import xyz.kip.auth.service.model.LoginRequestModel;
+import xyz.kip.auth.service.model.LoginResponseModel;
+import xyz.kip.auth.service.model.RegisterRequestModel;
+import xyz.kip.auth.service.model.UserAuthModel;
+import xyz.kip.auth.service.utils.JwtUtil;
+import xyz.kip.auth.service.utils.PasswordEncoder;
+import xyz.kip.auth.service.utils.SnowFlakeUtil;
 import xyz.kip.auth.manager.UserManager;
 import xyz.kip.auth.manager.domain.UserDomain;
 import xyz.kip.auth.manager.cache.CacheManager;

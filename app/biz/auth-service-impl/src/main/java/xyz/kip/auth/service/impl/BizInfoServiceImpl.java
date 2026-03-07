@@ -1,14 +1,14 @@
-package xyz.kip.service.impl;
+package xyz.kip.auth.service.impl;
 
 import xyz.kip.auth.manager.BizInfoManager;
-import xyz.kip.service.convert.BizConvert;
-import xyz.kip.service.BizInfoService;
+import xyz.kip.auth.service.convert.BizConvert;
+import xyz.kip.auth.service.BizInfoService;
 import xyz.kip.auth.manager.domain.BizInfoDomain;
 import xyz.kip.open.common.base.Result;
 import xyz.kip.open.common.utils.AssertUtil;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import xyz.kip.service.model.BizInfoModel;
+import xyz.kip.auth.service.model.BizInfoModel;
 
 /**
  * @author xiaoshichuan

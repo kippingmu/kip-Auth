@@ -1,4 +1,4 @@
-package xyz.kip.service.model;
+package xyz.kip.auth.service.model;
 
 import xyz.kip.open.common.base.ToString;
 

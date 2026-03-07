@@ -1,7 +1,7 @@
-package xyz.kip.service;
+package xyz.kip.auth.service;
 
 import xyz.kip.open.common.base.Result;
-import xyz.kip.service.model.BizInfoModel;
+import xyz.kip.auth.service.model.BizInfoModel;
 
 /**
  * @author xiaoshichuan

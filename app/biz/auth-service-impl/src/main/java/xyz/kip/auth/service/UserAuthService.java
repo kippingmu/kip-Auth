@@ -1,10 +1,10 @@
-package xyz.kip.service;
+package xyz.kip.auth.service;
 
 import xyz.kip.open.common.base.Result;
-import xyz.kip.service.model.LoginRequestModel;
-import xyz.kip.service.model.LoginResponseModel;
-import xyz.kip.service.model.RegisterRequestModel;
-import xyz.kip.service.model.UserAuthModel;
+import xyz.kip.auth.service.model.LoginRequestModel;
+import xyz.kip.auth.service.model.LoginResponseModel;
+import xyz.kip.auth.service.model.RegisterRequestModel;
+import xyz.kip.auth.service.model.UserAuthModel;
 
 /**
  * 用户认证业务服务接口

@@ -1,4 +1,4 @@
-package xyz.kip.service.utils;
+package xyz.kip.auth.service.utils;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
