@@ -12,10 +12,8 @@ RUN --mount=type=cache,target=/root/.m2 \
     rm -f /root/.m2/repository/xyz/kip/kip-open-common/maven-metadata-local.xml && \
     rm -rf /root/.m2/repository/xyz/kip/kip-open-common/1.0-SNAPSHOT && \
     mvn -B -ntp install:install-file \
-    -Dfile=/tmp/deps/kip-open-common-1.0-SNAPSHOT.jar \
-    -DpomFile=/tmp/deps/kip-open-common-1.0-SNAPSHOT.pom
-
-RUN --mount=type=cache,target=/root/.m2 \
+      -Dfile=/tmp/deps/kip-open-common-1.0-SNAPSHOT.jar \
+      -DpomFile=/tmp/deps/kip-open-common-1.0-SNAPSHOT.pom && \
     mvn -B -ntp -pl app/auth-web -am -DskipTests clean package
 
 FROM eclipse-temurin:21-jre-jammy
@@ -24,4 +22,5 @@ WORKDIR /app
 COPY --from=builder /build/app/auth-web/target/auth-web-1.0-SNAPSHOT.jar /app/app.jar
 
 EXPOSE 5001
+EXPOSE 8720
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
