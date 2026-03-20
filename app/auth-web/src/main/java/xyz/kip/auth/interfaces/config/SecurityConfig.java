@@ -44,6 +44,7 @@ public class SecurityConfig {
                 // 权限配置
                 .authorizeHttpRequests(authz -> authz
                         // 不需要认证的端点
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/health").permitAll()

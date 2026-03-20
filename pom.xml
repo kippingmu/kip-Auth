@@ -28,7 +28,6 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <app.version>1.0-SNAPSHOT</app.version>
-        <start-class>GatewayBootApplication</start-class>
         <spring.cloud.version>2025.0.0</spring.cloud.version>
         <cloud.alibaba.version>2025.0.0.0</cloud.alibaba.version>
         <nacos.client.version>3.0.3</nacos.client.version>

@@ -78,6 +78,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>xyz.kip.auth.KipAuthBootApplication</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>
