@@ -20,10 +20,6 @@ spring:
         group: DEFAULT_GROUP
         namespace: ""
         refresh-enabled: true
-    sentinel:
-      transport:
-        port: 8090
-      web-context-unify: true
 
   jackson:
     serialization:
@@ -38,7 +34,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,refresh
   endpoint:
     health:
       show-details: always
