@@ -5,15 +5,14 @@ WORKDIR /build
 
 COPY pom.xml ./
 COPY app ./app
-COPY deps/kip-open-common-1.0-SNAPSHOT.jar /tmp/deps/kip-open-common-1.0-SNAPSHOT.jar
-COPY deps/kip-open-common-1.0-SNAPSHOT.pom /tmp/deps/kip-open-common-1.0-SNAPSHOT.pom
+COPY deps/kip-open-common-root/maven-metadata-local.xml /tmp/deps/root-metadata.xml
+COPY deps/kip-open-common/ /tmp/deps/kip-open-common/
 
 RUN --mount=type=cache,target=/root/.m2 \
-    rm -f /root/.m2/repository/xyz/kip/kip-open-common/maven-metadata-local.xml && \
-    rm -rf /root/.m2/repository/xyz/kip/kip-open-common/1.0-SNAPSHOT && \
-    mvn -B -ntp install:install-file \
-      -Dfile=/tmp/deps/kip-open-common-1.0-SNAPSHOT.jar \
-      -DpomFile=/tmp/deps/kip-open-common-1.0-SNAPSHOT.pom && \
+    rm -rf /root/.m2/repository/xyz/kip/kip-open-common && \
+    mkdir -p /root/.m2/repository/xyz/kip/kip-open-common/1.0-SNAPSHOT && \
+    cp /tmp/deps/root-metadata.xml /root/.m2/repository/xyz/kip/kip-open-common/maven-metadata-local.xml && \
+    cp /tmp/deps/kip-open-common/* /root/.m2/repository/xyz/kip/kip-open-common/1.0-SNAPSHOT/ && \
     mvn -B -ntp -pl app/auth-web -am -DskipTests clean package
 
 FROM eclipse-temurin:21-jre-jammy
