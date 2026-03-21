@@ -35,7 +35,7 @@
         <!-- 本地依赖 -->
         <dependency>
             <groupId>xyz.kip</groupId>
-            <artifactId>auth-common</artifactId>
+            <artifactId>kip-open-common</artifactId>
         </dependency>
         <dependency>
             <groupId>xyz.kip</groupId>
