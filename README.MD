@@ -31,3 +31,12 @@
 - **安全事件**：密码重置、权限变更、token 吊销记录。
 
 ---
+## Git Remote Policy
+
+Use SSH for the Git remote. Do not use HTTPS remotes in this repository.
+
+Correct remote:
+
+
+git remote set-url origin git@github.com:kippingmu/kip-Auth.git
+
