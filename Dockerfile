@@ -10,14 +10,13 @@ COPY app/common/auth-manager/pom.xml app/common/auth-manager/pom.xml
 COPY app/common/auth-dal/pom.xml app/common/auth-dal/pom.xml
 COPY app/biz/auth-service-impl/pom.xml app/biz/auth-service-impl/pom.xml
 COPY app/auth-web/pom.xml app/auth-web/pom.xml
-COPY deps/kip-open-common-root/maven-metadata-local.xml /tmp/deps/root-metadata.xml
-COPY deps/kip-open-common/ /tmp/deps/kip-open-common/
+COPY deps/kip-open-common-1.0-SNAPSHOT.jar /tmp/deps/kip-open-common-1.0-SNAPSHOT.jar
+COPY deps/kip-open-common-1.0-SNAPSHOT.pom /tmp/deps/kip-open-common-1.0-SNAPSHOT.pom
 
 RUN --mount=type=cache,target=/root/.m2 \
-    rm -rf /root/.m2/repository/xyz/kip/kip-open-common && \
-    mkdir -p /root/.m2/repository/xyz/kip/kip-open-common/1.0-SNAPSHOT && \
-    cp /tmp/deps/root-metadata.xml /root/.m2/repository/xyz/kip/kip-open-common/maven-metadata-local.xml && \
-    cp /tmp/deps/kip-open-common/* /root/.m2/repository/xyz/kip/kip-open-common/1.0-SNAPSHOT/
+    mvn -B install:install-file \
+    -Dfile=/tmp/deps/kip-open-common-1.0-SNAPSHOT.jar \
+    -DpomFile=/tmp/deps/kip-open-common-1.0-SNAPSHOT.pom
 
 RUN --mount=type=cache,target=/root/.m2 \
     mvn -B -pl app/auth-web -am dependency:go-offline

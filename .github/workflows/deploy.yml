@@ -62,20 +62,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          DEP_ROOT="$HOME/.m2/repository/xyz/kip/kip-open-common"
-          DEP_DIR="$DEP_ROOT/1.0-SNAPSHOT"
-          test -f "$DEP_ROOT/maven-metadata-local.xml"
+          DEP_DIR="$HOME/.m2/repository/xyz/kip/kip-open-common/1.0-SNAPSHOT"
           test -f "$DEP_DIR/kip-open-common-1.0-SNAPSHOT.jar"
           test -f "$DEP_DIR/kip-open-common-1.0-SNAPSHOT.pom"
 
           rm -rf deps
-          mkdir -p deps/kip-open-common-root deps/kip-open-common
-          cp "$DEP_ROOT/maven-metadata-local.xml" deps/kip-open-common-root/
-          cp "$DEP_DIR/kip-open-common-1.0-SNAPSHOT.jar" deps/kip-open-common/
-          cp "$DEP_DIR/kip-open-common-1.0-SNAPSHOT.pom" deps/kip-open-common/
-          cp "$DEP_DIR/maven-metadata-local.xml" deps/kip-open-common/
-          cp "$DEP_DIR/_remote.repositories" deps/kip-open-common/
-          find deps -maxdepth 2 -type f | sort
+          mkdir -p deps
+          cp "$DEP_DIR/kip-open-common-1.0-SNAPSHOT.jar" deps/
+          cp "$DEP_DIR/kip-open-common-1.0-SNAPSHOT.pom" deps/
+          ls -lh deps/
 
       - name: Build image
         shell: bash
