@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.kip.auth.request.LoginRequestRequest;
 import xyz.kip.auth.resonse.LoginResponse;
-import xyz.kip.auth.resonse.RegisterRequest;
+import xyz.kip.auth.request.RegisterRequest;
 import xyz.kip.auth.request.UserAuthRequest;
 import xyz.kip.auth.resonse.UserAuthResponse;
 import xyz.kip.auth.service.UserAuthService;
+import xyz.kip.open.common.base.AbstractApiTemplate;
 import xyz.kip.open.common.base.Result;
 import xyz.kip.auth.service.model.LoginRequestModel;
 import xyz.kip.auth.service.model.LoginResponseModel;
@@ -38,36 +39,47 @@ public class UserAuthController {
     @Resource
     private UserAuthService userAuthService;
 
-    /**
-     * 用户登录
-     *
-     * @param loginRequest 登录请求
-     * @return 登录响应
-     */
+
     @PostMapping("/login")
-    public Result<LoginResponse> login(@RequestBody LoginRequestRequest loginRequest) {
-        LoginRequestModel model = new LoginRequestModel();
-        model.setUsername(loginRequest.getUsername());
-        model.setPassword(loginRequest.getPassword());
-        model.setVerifyCode(loginRequest.getVerifyCode());
-        model.setTenantId(loginRequest.getTenantId());
+    public Result<LoginResponse> login(@RequestBody LoginRequestRequest req) {
 
-        Result<LoginResponseModel> res = userAuthService.login(model);
-        if (!res.isSuccess() || res.getResult() == null) {
-            return Result.failure(res.getMessage());
-        }
+        AbstractApiTemplate<LoginRequestRequest, LoginResponse> translateApi = new AbstractApiTemplate<LoginRequestRequest, LoginResponse>() {
 
-        LoginResponseModel m = res.getResult();
-        LoginResponse out = new LoginResponse();
-        out.setUserId(m.getUserId());
-        out.setUsername(m.getUsername());
-        out.setEmail(m.getEmail());
-        out.setPhone(m.getPhone());
-        out.setNickname(m.getNickname());
-        out.setToken(m.getToken());
-        out.setTokenType(m.getTokenType());
-        out.setExpiresIn(m.getExpiresIn());
-        return Result.success(out);
+
+            @Override
+            protected Result<Void> doValidate(LoginRequestRequest loginRequestRequest) {
+
+                return null;
+            }
+
+            @Override
+            protected Result<LoginResponse> execute(LoginRequestRequest loginRequestRequest) {
+                LoginRequestModel model = new LoginRequestModel();
+                model.setUsername(req.getUsername());
+                model.setPassword(req.getPassword());
+                model.setVerifyCode(req.getVerifyCode());
+                model.setTenantId(req.getTenantId());
+
+                Result<LoginResponseModel> res = userAuthService.login(model);
+                if (!res.isSuccess() || res.getResult() == null) {
+                    return Result.failure(res.getMessage());
+                }
+
+                LoginResponseModel m = res.getResult();
+                LoginResponse out = new LoginResponse();
+                out.setUserId(m.getUserId());
+                out.setUsername(m.getUsername());
+                out.setEmail(m.getEmail());
+                out.setPhone(m.getPhone());
+                out.setNickname(m.getNickname());
+                out.setToken(m.getToken());
+                out.setTokenType(m.getTokenType());
+                out.setExpiresIn(m.getExpiresIn());
+                return Result.success(out);
+            }
+        };
+
+        return translateApi.handle(req);
     }
 
     /**

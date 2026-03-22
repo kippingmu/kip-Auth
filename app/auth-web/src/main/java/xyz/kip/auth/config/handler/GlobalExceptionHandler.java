@@ -1,4 +1,4 @@
-package xyz.kip.auth.interfaces.advice;
+package xyz.kip.auth.config.handler;
 
 import xyz.kip.open.common.base.Result;
 import org.springframework.http.HttpStatus;

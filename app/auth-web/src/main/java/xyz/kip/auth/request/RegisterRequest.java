@@ -1,4 +1,4 @@
-package xyz.kip.auth.resonse;
+package xyz.kip.auth.request;
 
 import xyz.kip.open.common.base.ToString;
 

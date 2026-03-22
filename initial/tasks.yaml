@@ -1,0 +1,6 @@
+tasks:
+  id: 1
+  status: @codex todo
+  details:
+    spec: see file
+    file: ./task-spec-controllerFix.md

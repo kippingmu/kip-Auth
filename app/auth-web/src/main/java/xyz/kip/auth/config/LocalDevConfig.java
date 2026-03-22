@@ -1,4 +1,4 @@
-package xyz.kip.auth.interfaces.config;
+package xyz.kip.auth.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package xyz.kip.auth.interfaces.config;
+package xyz.kip.auth.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,8 +9,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import xyz.kip.auth.interfaces.security.JwtAuthenticationEntryPoint;
-import xyz.kip.auth.interfaces.security.JwtAuthenticationFilter;
+import xyz.kip.auth.security.JwtAuthenticationEntryPoint;
+import xyz.kip.auth.security.JwtAuthenticationFilter;
 
 /**
  * Spring Security 配置

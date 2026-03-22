@@ -1,11 +1,10 @@
-package xyz.kip.auth.interfaces.config;
+package xyz.kip.auth.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import xyz.kip.auth.manager.BizInfoManager;
-import xyz.kip.auth.manager.domain.BizInfoDomain;
 import xyz.kip.open.common.base.Result;
 
 /**

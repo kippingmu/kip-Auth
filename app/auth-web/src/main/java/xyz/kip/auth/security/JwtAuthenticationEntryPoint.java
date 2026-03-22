@@ -1,4 +1,4 @@
-package xyz.kip.auth.interfaces.security;
+package xyz.kip.auth.security;
 
 import xyz.kip.open.common.base.Result;
 import org.springframework.security.core.AuthenticationException;

@@ -1,4 +1,4 @@
-package xyz.kip.auth.interfaces.security;
+package xyz.kip.auth.security;
 
 import jakarta.annotation.Resource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
