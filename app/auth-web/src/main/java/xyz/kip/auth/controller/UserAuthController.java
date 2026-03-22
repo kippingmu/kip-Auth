@@ -22,7 +22,7 @@ import xyz.kip.auth.service.model.LoginRequestModel;
 import xyz.kip.auth.service.model.LoginResponseModel;
 import xyz.kip.auth.service.model.RegisterRequestModel;
 import xyz.kip.auth.service.model.UserAuthModel;
-import xyz.kip.auth.controller.support.ApiTemplate;
+import xyz.kip.open.common.base.AbstractApiTemplate;
 import xyz.kip.open.common.base.Result;
 
 /**
@@ -43,7 +43,7 @@ public class UserAuthController {
 
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody LoginRequestRequest req) {
-        return new ApiTemplate<LoginRequestRequest, LoginResponse>() {
+        return new AbstractApiTemplate<LoginRequestRequest, LoginResponse>() {
             @Override
             protected Result<Void> doValidate(LoginRequestRequest request) {
                 if (request == null) {
@@ -55,7 +55,7 @@ public class UserAuthController {
                 if (isBlank(request.getPassword())) {
                     return Result.failure("密码不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -71,7 +71,7 @@ public class UserAuthController {
 
     @PostMapping("/register")
     public Result<UserAuthRequest> register(@RequestBody RegisterRequest req) {
-        return new ApiTemplate<RegisterRequest, UserAuthRequest>() {
+        return new AbstractApiTemplate<RegisterRequest, UserAuthRequest>() {
             @Override
             protected Result<Void> doValidate(RegisterRequest request) {
                 if (request == null) {
@@ -80,7 +80,7 @@ public class UserAuthController {
                 if (isBlank(request.getEmail())) {
                     return Result.failure("邮箱不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -96,7 +96,7 @@ public class UserAuthController {
 
     @GetMapping("/user/info")
     public Result<UserAuthModel> getUserInfo(@RequestHeader(value = "Authorization", required = false) String token) {
-        return new ApiTemplate<String, UserAuthModel>() {
+        return new AbstractApiTemplate<String, UserAuthModel>() {
             @Override
             protected Result<Void> doValidate(String request) {
                 return validateTokenHeader(request);
@@ -111,7 +111,7 @@ public class UserAuthController {
 
     @PostMapping("/token/validate")
     public Result<UserAuthModel> validateToken(@RequestHeader(value = "Authorization", required = false) String token) {
-        return new ApiTemplate<String, UserAuthModel>() {
+        return new AbstractApiTemplate<String, UserAuthModel>() {
             @Override
             protected Result<Void> doValidate(String request) {
                 return validateTokenHeader(request);
@@ -129,7 +129,7 @@ public class UserAuthController {
             @RequestParam String userId,
             @RequestParam String oldPassword,
             @RequestParam String newPassword) {
-        return new ApiTemplate<ChangePasswordCommand, Boolean>() {
+        return new AbstractApiTemplate<ChangePasswordCommand, Boolean>() {
             @Override
             protected Result<Void> doValidate(ChangePasswordCommand request) {
                 if (isBlank(request.getUserId())) {
@@ -141,7 +141,7 @@ public class UserAuthController {
                 if (isBlank(request.getNewPassword())) {
                     return Result.failure("newPassword不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -155,7 +155,7 @@ public class UserAuthController {
     public Result<Boolean> resetPassword(
             @RequestParam String userId,
             @RequestParam String newPassword) {
-        return new ApiTemplate<ResetPasswordCommand, Boolean>() {
+        return new AbstractApiTemplate<ResetPasswordCommand, Boolean>() {
             @Override
             protected Result<Void> doValidate(ResetPasswordCommand request) {
                 if (isBlank(request.getUserId())) {
@@ -164,7 +164,7 @@ public class UserAuthController {
                 if (isBlank(request.getNewPassword())) {
                     return Result.failure("newPassword不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -176,13 +176,13 @@ public class UserAuthController {
 
     @PostMapping("/user/enable")
     public Result<Boolean> enableUser(@RequestParam String userId) {
-        return new ApiTemplate<String, Boolean>() {
+        return new AbstractApiTemplate<String, Boolean>() {
             @Override
             protected Result<Void> doValidate(String request) {
                 if (isBlank(request)) {
                     return Result.failure("userId不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -194,13 +194,13 @@ public class UserAuthController {
 
     @PostMapping("/user/disable")
     public Result<Boolean> disableUser(@RequestParam String userId) {
-        return new ApiTemplate<String, Boolean>() {
+        return new AbstractApiTemplate<String, Boolean>() {
             @Override
             protected Result<Void> doValidate(String request) {
                 if (isBlank(request)) {
                     return Result.failure("userId不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -212,13 +212,13 @@ public class UserAuthController {
 
     @DeleteMapping("/user/{userId}")
     public Result<Boolean> deleteUser(@PathVariable String userId) {
-        return new ApiTemplate<String, Boolean>() {
+        return new AbstractApiTemplate<String, Boolean>() {
             @Override
             protected Result<Void> doValidate(String request) {
                 if (isBlank(request)) {
                     return Result.failure("userId不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -230,13 +230,13 @@ public class UserAuthController {
 
     @GetMapping("/user/{userId}")
     public Result<UserAuthResponse> getUser(@PathVariable String userId) {
-        return new ApiTemplate<String, UserAuthResponse>() {
+        return new AbstractApiTemplate<String, UserAuthResponse>() {
             @Override
             protected Result<Void> doValidate(String request) {
                 if (isBlank(request)) {
                     return Result.failure("userId不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -252,13 +252,13 @@ public class UserAuthController {
 
     @GetMapping("/user/name/{username}")
     public Result<UserAuthResponse> getUserByName(@PathVariable String username) {
-        return new ApiTemplate<String, UserAuthResponse>() {
+        return new AbstractApiTemplate<String, UserAuthResponse>() {
             @Override
             protected Result<Void> doValidate(String request) {
                 if (isBlank(request)) {
                     return Result.failure("username不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -274,7 +274,7 @@ public class UserAuthController {
 
     @PutMapping("/user")
     public Result<Boolean> updateUser(@RequestBody UserAuthRequest req) {
-        return new ApiTemplate<UserAuthRequest, Boolean>() {
+        return new AbstractApiTemplate<UserAuthRequest, Boolean>() {
             @Override
             protected Result<Void> doValidate(UserAuthRequest request) {
                 if (request == null) {
@@ -283,7 +283,7 @@ public class UserAuthController {
                 if (isBlank(request.getUserId())) {
                     return Result.failure("userId不能为空");
                 }
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -295,10 +295,10 @@ public class UserAuthController {
 
     @GetMapping("/health")
     public Result<String> health() {
-        return new ApiTemplate<String, String>() {
+        return new AbstractApiTemplate<String, String>() {
             @Override
             protected Result<Void> doValidate(String request) {
-                return Result.success(null);
+                return null;
             }
 
             @Override
@@ -312,7 +312,7 @@ public class UserAuthController {
         if (isBlank(token)) {
             return Result.failure("缺少authorization token");
         }
-        return Result.success(null);
+        return null;
     }
 
     private String normalizeToken(String token) {
