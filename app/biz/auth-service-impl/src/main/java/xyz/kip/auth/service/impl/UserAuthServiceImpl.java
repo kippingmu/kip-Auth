@@ -123,12 +123,13 @@ public class UserAuthServiceImpl implements UserAuthService {
         }
 
         String userId = SnowFlakeUtil.nextSegmentId();
+        String generatedPhone = buildRegistrationPhone(registerRequest.getPhone(), userId);
         String encoded = passwordEncoder.encodePassword("Pass@123456");
         String salt = java.util.UUID.randomUUID().toString().replace("-", "");
         UserDomain d = new UserDomain();
         d.setUserId(userId);
         d.setUsername(account);
-        d.setPhone(registerRequest.getPhone());
+        d.setPhone(generatedPhone);
         d.setEmail(account);
         d.setPassword(encoded);
         d.setSalt(salt);
@@ -143,13 +144,27 @@ public class UserAuthServiceImpl implements UserAuthService {
         result.setUserId(userId);
         result.setUsername(account);
         result.setEmail(account);
-        result.setPhone(registerRequest.getPhone());
+        result.setPhone(generatedPhone);
         result.setNickname(registerRequest.getNickname());
         result.setStatus(1);
         result.setTenantId(tenant);
         return Result.success(result);
     }
 
+    private static String buildRegistrationPhone(String requestPhone, String userId) {
+        if (requestPhone == null || requestPhone.isBlank()) {
+            String digits = userId == null ? "" : userId.chars()
+                    .filter(Character::isDigit)
+                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                    .toString();
+            if (digits.length() >= 11) {
+                return digits.substring(digits.length() - 11);
+            }
+            long hashBase = userId == null ? 0L : Math.abs((long) userId.hashCode()) % 10_000_000_000L;
+            return String.format("1%010d", hashBase);
+        }
+        return requestPhone.trim();
+    }
 
     private static UserAuthModel toModel(UserDomain d) {
         UserAuthModel m = new UserAuthModel();

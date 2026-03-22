@@ -136,6 +136,10 @@ class UserAuthServiceImplTest {
         assertEquals("encoded-pass", created.getPassword());
         assertEquals("default", created.getTenantId());
         assertEquals(1, created.getStatus());
+        assertNotNull(created.getPhone());
+        assertEquals(11, created.getPhone().length());
+        assertTrue(created.getPhone().chars().allMatch(Character::isDigit));
+        assertEquals(created.getPhone(), result.getResult().getPhone());
         assertNotNull(created.getUserId());
         assertFalse(created.getUserId().isBlank());
         assertNotNull(created.getSalt());
