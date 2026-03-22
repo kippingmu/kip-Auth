@@ -13,17 +13,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.kip.auth.request.LoginRequestRequest;
-import xyz.kip.auth.resonse.LoginResponse;
 import xyz.kip.auth.request.RegisterRequest;
 import xyz.kip.auth.request.UserAuthRequest;
+import xyz.kip.auth.resonse.LoginResponse;
 import xyz.kip.auth.resonse.UserAuthResponse;
 import xyz.kip.auth.service.UserAuthService;
-import xyz.kip.open.common.base.AbstractApiTemplate;
-import xyz.kip.open.common.base.Result;
 import xyz.kip.auth.service.model.LoginRequestModel;
 import xyz.kip.auth.service.model.LoginResponseModel;
 import xyz.kip.auth.service.model.RegisterRequestModel;
 import xyz.kip.auth.service.model.UserAuthModel;
+import xyz.kip.auth.controller.support.ApiTemplate;
+import xyz.kip.open.common.base.Result;
 
 /**
  * 用户认证控制器
@@ -36,267 +36,407 @@ import xyz.kip.auth.service.model.UserAuthModel;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class UserAuthController {
 
+    private static final String BEARER_PREFIX = "Bearer ";
+
     @Resource
     private UserAuthService userAuthService;
 
-
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody LoginRequestRequest req) {
-
-        AbstractApiTemplate<LoginRequestRequest, LoginResponse> translateApi = new AbstractApiTemplate<LoginRequestRequest, LoginResponse>() {
-
-
+        return new ApiTemplate<LoginRequestRequest, LoginResponse>() {
             @Override
-            protected Result<Void> doValidate(LoginRequestRequest loginRequestRequest) {
-
-                return null;
-            }
-
-            @Override
-            protected Result<LoginResponse> execute(LoginRequestRequest loginRequestRequest) {
-                LoginRequestModel model = new LoginRequestModel();
-                model.setUsername(req.getUsername());
-                model.setPassword(req.getPassword());
-                model.setVerifyCode(req.getVerifyCode());
-                model.setTenantId(req.getTenantId());
-
-                Result<LoginResponseModel> res = userAuthService.login(model);
-                if (!res.isSuccess() || res.getResult() == null) {
-                    return Result.failure(res.getMessage());
+            protected Result<Void> doValidate(LoginRequestRequest request) {
+                if (request == null) {
+                    return Result.failure("请求体不能为空");
                 }
-
-                LoginResponseModel m = res.getResult();
-                LoginResponse out = new LoginResponse();
-                out.setUserId(m.getUserId());
-                out.setUsername(m.getUsername());
-                out.setEmail(m.getEmail());
-                out.setPhone(m.getPhone());
-                out.setNickname(m.getNickname());
-                out.setToken(m.getToken());
-                out.setTokenType(m.getTokenType());
-                out.setExpiresIn(m.getExpiresIn());
-                return Result.success(out);
+                if (isBlank(request.getUsername())) {
+                    return Result.failure("用户名不能为空");
+                }
+                if (isBlank(request.getPassword())) {
+                    return Result.failure("密码不能为空");
+                }
+                return Result.success(null);
             }
-        };
 
-        return translateApi.handle(req);
+            @Override
+            protected Result<LoginResponse> execute(LoginRequestRequest request) {
+                Result<LoginResponseModel> result = userAuthService.login(toLoginModel(request));
+                if (!result.isSuccess() || result.getResult() == null) {
+                    return Result.failure(result.getMessage());
+                }
+                return Result.success(toLoginResponse(result.getResult()));
+            }
+        }.handle(req);
     }
 
-    /**
-     * 用户注册
-     *
-     * @param registerRequest 注册请求
-     * @return 用户信息
-     */
     @PostMapping("/register")
-    public Result<UserAuthRequest> register(@RequestBody RegisterRequest registerRequest) {
-        RegisterRequestModel model = new RegisterRequestModel();
-        model.setUsername(registerRequest.getUsername());
-        model.setPassword(registerRequest.getPassword());
-        model.setConfirmPassword(registerRequest.getConfirmPassword());
-        model.setEmail(registerRequest.getEmail());
-        model.setPhone(registerRequest.getPhone());
-        model.setNickname(registerRequest.getNickname());
-        model.setVerifyCode(registerRequest.getVerifyCode());
-        model.setTenantId(registerRequest.getTenantId());
+    public Result<UserAuthRequest> register(@RequestBody RegisterRequest req) {
+        return new ApiTemplate<RegisterRequest, UserAuthRequest>() {
+            @Override
+            protected Result<Void> doValidate(RegisterRequest request) {
+                if (request == null) {
+                    return Result.failure("请求体不能为空");
+                }
+                if (isBlank(request.getEmail())) {
+                    return Result.failure("邮箱不能为空");
+                }
+                return Result.success(null);
+            }
 
-        Result<UserAuthModel> res = userAuthService.register(model);
-        if (!res.isSuccess() || res.getResult() == null) {
-            return Result.failure(res.getMessage());
-        }
-
-        UserAuthModel m = res.getResult();
-        UserAuthRequest out = new UserAuthRequest();
-        out.setUserId(m.getUserId());
-        out.setUsername(m.getUsername());
-        out.setEmail(m.getEmail());
-        out.setPhone(m.getPhone());
-        out.setNickname(m.getNickname());
-        out.setStatus(m.getStatus());
-        out.setTenantId(m.getTenantId());
-        return Result.success(out);
+            @Override
+            protected Result<UserAuthRequest> execute(RegisterRequest request) {
+                Result<UserAuthModel> result = userAuthService.register(toRegisterModel(request));
+                if (!result.isSuccess() || result.getResult() == null) {
+                    return Result.failure(result.getMessage());
+                }
+                return Result.success(toUserAuthRequest(result.getResult()));
+            }
+        }.handle(req);
     }
 
-    /**
-     * 获取当前用户信息 (需要token认证)
-     *
-     * @param token Authorization header中的token
-     * @return 用户信息
-     */
     @GetMapping("/user/info")
     public Result<UserAuthModel> getUserInfo(@RequestHeader(value = "Authorization", required = false) String token) {
-        if (token == null || token.isEmpty()) {
-            return Result.failure("缺少authorization token");
-        }
+        return new ApiTemplate<String, UserAuthModel>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                return validateTokenHeader(request);
+            }
 
-        // 移除 "Bearer " 前缀
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-
-        return userAuthService.validateToken(token);
+            @Override
+            protected Result<UserAuthModel> execute(String request) {
+                return userAuthService.validateToken(normalizeToken(request));
+            }
+        }.handle(token);
     }
 
-    /**
-     * 验证token
-     *
-     * @param token Authorization header中的token
-     * @return 验证结果
-     */
     @PostMapping("/token/validate")
     public Result<UserAuthModel> validateToken(@RequestHeader(value = "Authorization", required = false) String token) {
-        if (token == null || token.isEmpty()) {
-            return Result.failure("缺少authorization token");
-        }
+        return new ApiTemplate<String, UserAuthModel>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                return validateTokenHeader(request);
+            }
 
-        // 移除 "Bearer " 前缀
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-
-        return userAuthService.validateToken(token);
+            @Override
+            protected Result<UserAuthModel> execute(String request) {
+                return userAuthService.validateToken(normalizeToken(request));
+            }
+        }.handle(token);
     }
 
-    /**
-     * 修改密码
-     *
-     * @param userId      用户ID
-     * @param oldPassword 旧密码
-     * @param newPassword 新密码
-     * @return 修改结果
-     */
     @PostMapping("/password/change")
     public Result<Boolean> changePassword(
             @RequestParam String userId,
             @RequestParam String oldPassword,
             @RequestParam String newPassword) {
-        return userAuthService.changePassword(userId, oldPassword, newPassword);
+        return new ApiTemplate<ChangePasswordCommand, Boolean>() {
+            @Override
+            protected Result<Void> doValidate(ChangePasswordCommand request) {
+                if (isBlank(request.getUserId())) {
+                    return Result.failure("userId不能为空");
+                }
+                if (isBlank(request.getOldPassword())) {
+                    return Result.failure("oldPassword不能为空");
+                }
+                if (isBlank(request.getNewPassword())) {
+                    return Result.failure("newPassword不能为空");
+                }
+                return Result.success(null);
+            }
+
+            @Override
+            protected Result<Boolean> execute(ChangePasswordCommand request) {
+                return userAuthService.changePassword(request.getUserId(), request.getOldPassword(), request.getNewPassword());
+            }
+        }.handle(new ChangePasswordCommand(userId, oldPassword, newPassword));
     }
 
-    /**
-     * 重置密码
-     *
-     * @param userId      用户ID
-     * @param newPassword 新密码
-     * @return 重置结果
-     */
     @PostMapping("/password/reset")
     public Result<Boolean> resetPassword(
             @RequestParam String userId,
             @RequestParam String newPassword) {
-        return userAuthService.resetPassword(userId, newPassword);
+        return new ApiTemplate<ResetPasswordCommand, Boolean>() {
+            @Override
+            protected Result<Void> doValidate(ResetPasswordCommand request) {
+                if (isBlank(request.getUserId())) {
+                    return Result.failure("userId不能为空");
+                }
+                if (isBlank(request.getNewPassword())) {
+                    return Result.failure("newPassword不能为空");
+                }
+                return Result.success(null);
+            }
+
+            @Override
+            protected Result<Boolean> execute(ResetPasswordCommand request) {
+                return userAuthService.resetPassword(request.getUserId(), request.getNewPassword());
+            }
+        }.handle(new ResetPasswordCommand(userId, newPassword));
     }
 
-    /**
-     * 启用用户
-     *
-     * @param userId 用户ID
-     * @return 启用结果
-     */
     @PostMapping("/user/enable")
     public Result<Boolean> enableUser(@RequestParam String userId) {
-        return userAuthService.enableUser(userId);
+        return new ApiTemplate<String, Boolean>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                if (isBlank(request)) {
+                    return Result.failure("userId不能为空");
+                }
+                return Result.success(null);
+            }
+
+            @Override
+            protected Result<Boolean> execute(String request) {
+                return userAuthService.enableUser(request);
+            }
+        }.handle(userId);
     }
 
-    /**
-     * 禁用用户
-     *
-     * @param userId 用户ID
-     * @return 禁用结果
-     */
     @PostMapping("/user/disable")
     public Result<Boolean> disableUser(@RequestParam String userId) {
-        return userAuthService.disableUser(userId);
+        return new ApiTemplate<String, Boolean>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                if (isBlank(request)) {
+                    return Result.failure("userId不能为空");
+                }
+                return Result.success(null);
+            }
+
+            @Override
+            protected Result<Boolean> execute(String request) {
+                return userAuthService.disableUser(request);
+            }
+        }.handle(userId);
     }
 
-    /**
-     * 删除用户
-     *
-     * @param userId 用户ID
-     * @return 删除结果
-     */
     @DeleteMapping("/user/{userId}")
     public Result<Boolean> deleteUser(@PathVariable String userId) {
-        return userAuthService.deleteUser(userId);
+        return new ApiTemplate<String, Boolean>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                if (isBlank(request)) {
+                    return Result.failure("userId不能为空");
+                }
+                return Result.success(null);
+            }
+
+            @Override
+            protected Result<Boolean> execute(String request) {
+                return userAuthService.deleteUser(request);
+            }
+        }.handle(userId);
     }
 
-    /**
-     * 查询用户信息
-     *
-     * @param userId 用户ID
-     * @return 用户信息
-     */
     @GetMapping("/user/{userId}")
     public Result<UserAuthResponse> getUser(@PathVariable String userId) {
-        Result<UserAuthModel> res = userAuthService.queryByUserId(userId);
-        if (!res.isSuccess() || res.getResult() == null) {
-            return Result.failure(res.getMessage());
-        }
-        UserAuthModel m = res.getResult();
-        UserAuthResponse out = new UserAuthResponse();
-        out.setUserId(m.getUserId());
-        out.setUsername(m.getUsername());
-        out.setEmail(m.getEmail());
-        out.setPhone(m.getPhone());
-        out.setNickname(m.getNickname());
-        out.setStatus(m.getStatus());
-        out.setTenantId(m.getTenantId());
-        return Result.success(out);
+        return new ApiTemplate<String, UserAuthResponse>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                if (isBlank(request)) {
+                    return Result.failure("userId不能为空");
+                }
+                return Result.success(null);
+            }
 
+            @Override
+            protected Result<UserAuthResponse> execute(String request) {
+                Result<UserAuthModel> result = userAuthService.queryByUserId(request);
+                if (!result.isSuccess() || result.getResult() == null) {
+                    return Result.failure(result.getMessage());
+                }
+                return Result.success(toUserAuthResponse(result.getResult()));
+            }
+        }.handle(userId);
     }
 
-    /**
-     * 通过用户名查询用户
-     *
-     * @param username 用户名
-     * @return 用户信息
-     */
     @GetMapping("/user/name/{username}")
     public Result<UserAuthResponse> getUserByName(@PathVariable String username) {
-        Result<UserAuthModel> res = userAuthService.queryByUsername(username);
-        if (!res.isSuccess() || res.getResult() == null) {
-            return Result.failure(res.getMessage());
-        }
-        UserAuthModel m = res.getResult();
-        UserAuthResponse out = new UserAuthResponse();
-        out.setUserId(m.getUserId());
-        out.setUsername(m.getUsername());
-        out.setEmail(m.getEmail());
-        out.setPhone(m.getPhone());
-        out.setNickname(m.getNickname());
-        out.setStatus(m.getStatus());
-        out.setTenantId(m.getTenantId());
-        return Result.success(out);
+        return new ApiTemplate<String, UserAuthResponse>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                if (isBlank(request)) {
+                    return Result.failure("username不能为空");
+                }
+                return Result.success(null);
+            }
+
+            @Override
+            protected Result<UserAuthResponse> execute(String request) {
+                Result<UserAuthModel> result = userAuthService.queryByUsername(request);
+                if (!result.isSuccess() || result.getResult() == null) {
+                    return Result.failure(result.getMessage());
+                }
+                return Result.success(toUserAuthResponse(result.getResult()));
+            }
+        }.handle(username);
     }
 
-    /**
-     * 更新用户信息
-     *
-     * @param userAuth 用户信息
-     * @return 更新结果
-     */
     @PutMapping("/user")
-    public Result<Boolean> updateUser(@RequestBody UserAuthRequest userAuth) {
-        UserAuthModel m = new UserAuthModel();
-        m.setUserId(userAuth.getUserId());
-        m.setUsername(userAuth.getUsername());
-        m.setEmail(userAuth.getEmail());
-        m.setPhone(userAuth.getPhone());
-        m.setNickname(userAuth.getNickname());
-        m.setStatus(userAuth.getStatus());
-        m.setTenantId(userAuth.getTenantId());
-        // 密码若需要更新应走 change/reset 端点
-        return userAuthService.updateUser(m);
+    public Result<Boolean> updateUser(@RequestBody UserAuthRequest req) {
+        return new ApiTemplate<UserAuthRequest, Boolean>() {
+            @Override
+            protected Result<Void> doValidate(UserAuthRequest request) {
+                if (request == null) {
+                    return Result.failure("请求体不能为空");
+                }
+                if (isBlank(request.getUserId())) {
+                    return Result.failure("userId不能为空");
+                }
+                return Result.success(null);
+            }
 
+            @Override
+            protected Result<Boolean> execute(UserAuthRequest request) {
+                return userAuthService.updateUser(toUserAuthModel(request));
+            }
+        }.handle(req);
     }
 
-    /**
-     * 健康检查
-     *
-     * @return ok
-     */
     @GetMapping("/health")
     public Result<String> health() {
-        return Result.success("Auth service is running");
+        return new ApiTemplate<String, String>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                return Result.success(null);
+            }
+
+            @Override
+            protected Result<String> execute(String request) {
+                return Result.success("Auth service is running");
+            }
+        }.handle("health");
+    }
+
+    private Result<Void> validateTokenHeader(String token) {
+        if (isBlank(token)) {
+            return Result.failure("缺少authorization token");
+        }
+        return Result.success(null);
+    }
+
+    private String normalizeToken(String token) {
+        String normalized = token.trim();
+        if (normalized.startsWith(BEARER_PREFIX)) {
+            return normalized.substring(BEARER_PREFIX.length());
+        }
+        return normalized;
+    }
+
+    private LoginRequestModel toLoginModel(LoginRequestRequest request) {
+        LoginRequestModel model = new LoginRequestModel();
+        model.setUsername(request.getUsername());
+        model.setPassword(request.getPassword());
+        model.setVerifyCode(request.getVerifyCode());
+        model.setTenantId(request.getTenantId());
+        return model;
+    }
+
+    private LoginResponse toLoginResponse(LoginResponseModel model) {
+        LoginResponse response = new LoginResponse();
+        response.setUserId(model.getUserId());
+        response.setUsername(model.getUsername());
+        response.setEmail(model.getEmail());
+        response.setPhone(model.getPhone());
+        response.setNickname(model.getNickname());
+        response.setToken(model.getToken());
+        response.setTokenType(model.getTokenType());
+        response.setExpiresIn(model.getExpiresIn());
+        return response;
+    }
+
+    private RegisterRequestModel toRegisterModel(RegisterRequest request) {
+        RegisterRequestModel model = new RegisterRequestModel();
+        model.setUsername(request.getUsername());
+        model.setPassword(request.getPassword());
+        model.setConfirmPassword(request.getConfirmPassword());
+        model.setEmail(request.getEmail());
+        model.setPhone(request.getPhone());
+        model.setNickname(request.getNickname());
+        model.setVerifyCode(request.getVerifyCode());
+        model.setTenantId(request.getTenantId());
+        return model;
+    }
+
+    private UserAuthRequest toUserAuthRequest(UserAuthModel model) {
+        UserAuthRequest response = new UserAuthRequest();
+        response.setUserId(model.getUserId());
+        response.setUsername(model.getUsername());
+        response.setEmail(model.getEmail());
+        response.setPhone(model.getPhone());
+        response.setNickname(model.getNickname());
+        response.setStatus(model.getStatus());
+        response.setTenantId(model.getTenantId());
+        return response;
+    }
+
+    private UserAuthResponse toUserAuthResponse(UserAuthModel model) {
+        UserAuthResponse response = new UserAuthResponse();
+        response.setUserId(model.getUserId());
+        response.setUsername(model.getUsername());
+        response.setEmail(model.getEmail());
+        response.setPhone(model.getPhone());
+        response.setNickname(model.getNickname());
+        response.setStatus(model.getStatus());
+        response.setTenantId(model.getTenantId());
+        return response;
+    }
+
+    private UserAuthModel toUserAuthModel(UserAuthRequest request) {
+        UserAuthModel model = new UserAuthModel();
+        model.setUserId(request.getUserId());
+        model.setUsername(request.getUsername());
+        model.setEmail(request.getEmail());
+        model.setPhone(request.getPhone());
+        model.setNickname(request.getNickname());
+        model.setStatus(request.getStatus());
+        model.setTenantId(request.getTenantId());
+        return model;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private static final class ChangePasswordCommand {
+        private final String userId;
+        private final String oldPassword;
+        private final String newPassword;
+
+        private ChangePasswordCommand(String userId, String oldPassword, String newPassword) {
+            this.userId = userId;
+            this.oldPassword = oldPassword;
+            this.newPassword = newPassword;
+        }
+
+        private String getUserId() {
+            return userId;
+        }
+
+        private String getOldPassword() {
+            return oldPassword;
+        }
+
+        private String getNewPassword() {
+            return newPassword;
+        }
+    }
+
+    private static final class ResetPasswordCommand {
+        private final String userId;
+        private final String newPassword;
+
+        private ResetPasswordCommand(String userId, String newPassword) {
+            this.userId = userId;
+            this.newPassword = newPassword;
+        }
+
+        private String getUserId() {
+            return userId;
+        }
+
+        private String getNewPassword() {
+            return newPassword;
+        }
     }
 }
