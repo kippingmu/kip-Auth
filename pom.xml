@@ -7,7 +7,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,13 +31,72 @@
         <spring.cloud.version>2025.0.0</spring.cloud.version>
         <cloud.alibaba.version>2025.0.0.0</cloud.alibaba.version>
         <nacos.client.version>3.0.3</nacos.client.version>
-        <!-- Pin MyBatis Spring Boot starter to a known version -->
         <mybatis.spring.boot.version>3.0.5</mybatis.spring.boot.version>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>aliyun-private-releases</id>
+            <url>https://packages.aliyun.com/69c03f31ad0a337b92d8f85e/maven/2650125-release-obk1fp</url>
+        </repository>
+        <snapshotRepository>
+            <id>aliyun-private-snapshots</id>
+            <url>https://packages.aliyun.com/69c03f31ad0a337b92d8f85e/maven/2650125-snapshot-rdnfly</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>aliyun-private-releases</id>
+            <name>Aliyun Private Releases</name>
+            <url>https://packages.aliyun.com/69c03f31ad0a337b92d8f85e/maven/2650125-release-obk1fp</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>aliyun-private-snapshots</id>
+            <name>Aliyun Private Snapshots</name>
+            <url>https://packages.aliyun.com/69c03f31ad0a337b92d8f85e/maven/2650125-snapshot-rdnfly</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
     <dependencyManagement>
         <dependencies>
-            <!--spring cloud-->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -52,8 +111,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- 本地依赖管理 -->
             <dependency>
                 <groupId>xyz.kip</groupId>
                 <artifactId>auth-service-impl</artifactId>
@@ -79,7 +136,6 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>3.20.0</version>
             </dependency>
-            <!-- Centralize MyBatis starter version -->
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
