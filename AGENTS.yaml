@@ -1,0 +1,17 @@
+AGENTS:
+  dir:
+    initial:
+      order: 1
+      spec:
+      files: all
+      ignore:
+    docs:
+      order: 2
+      spec:
+      files: all
+      ignore:
+    scripts:
+      order: 3
+      spec:
+      files: all
+      ignore:
