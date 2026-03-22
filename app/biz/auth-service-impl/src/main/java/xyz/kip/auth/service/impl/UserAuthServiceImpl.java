@@ -109,31 +109,27 @@ public class UserAuthServiceImpl implements UserAuthService {
      */
     @Override
     public Result<UserAuthModel> register(RegisterRequestModel registerRequest) {
-        // 输入验证
-        if (registerRequest == null || registerRequest.getUsername() == null || registerRequest.getPassword() == null) {
-            return Result.failure("用户名和密码不能为空");
+        if (registerRequest == null || registerRequest.getEmail() == null || registerRequest.getEmail().isBlank()) {
+            return Result.failure("邮箱不能为空");
         }
 
-        // 验证密码一致性
-        if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-            return Result.failure("两次输入的密码不一致");
-        }
-
-        // 验证用户是否已存在（DB）
-        String tenant = registerRequest.getTenantId() != null ? registerRequest.getTenantId() : "default";
-        Result<UserDomain> exists = userManager.findByUsername(registerRequest.getUsername(), tenant);
+        String account = registerRequest.getEmail().trim();
+        String tenant = registerRequest.getTenantId() != null && !registerRequest.getTenantId().isBlank()
+                ? registerRequest.getTenantId()
+                : "default";
+        Result<UserDomain> exists = userManager.findByUsername(account, tenant);
         if (exists.isSuccess() && exists.getResult() != null) {
             return Result.failure("用户已存在");
         }
-        // 创建新用户（持久化）
+
         String userId = SnowFlakeUtil.nextSegmentId();
-        String encoded = passwordEncoder.encodePassword(registerRequest.getPassword());
+        String encoded = passwordEncoder.encodePassword("Pass@123456");
         String salt = java.util.UUID.randomUUID().toString().replace("-", "");
         UserDomain d = new UserDomain();
         d.setUserId(userId);
-        d.setUsername(registerRequest.getUsername());
+        d.setUsername(account);
         d.setPhone(registerRequest.getPhone());
-        d.setEmail(registerRequest.getEmail());
+        d.setEmail(account);
         d.setPassword(encoded);
         d.setSalt(salt);
         d.setStatus(1);
@@ -145,8 +141,8 @@ public class UserAuthServiceImpl implements UserAuthService {
 
         UserAuthModel result = new UserAuthModel();
         result.setUserId(userId);
-        result.setUsername(registerRequest.getUsername());
-        result.setEmail(registerRequest.getEmail());
+        result.setUsername(account);
+        result.setEmail(account);
         result.setPhone(registerRequest.getPhone());
         result.setNickname(registerRequest.getNickname());
         result.setStatus(1);

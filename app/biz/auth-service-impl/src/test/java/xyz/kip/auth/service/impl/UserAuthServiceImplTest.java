@@ -109,16 +109,13 @@ class UserAuthServiceImplTest {
     }
 
     @Test
-    void registerShouldCreateUserWithDefaultTenantAndEncodedPassword() {
+    void registerShouldCreateUserWithEmailAsAccountAndDefaultPassword() {
         RegisterRequestModel request = new RegisterRequestModel();
-        request.setUsername("new-user");
-        request.setPassword("Pass@123456");
-        request.setConfirmPassword("Pass@123456");
         request.setEmail("new-user@example.com");
         request.setPhone("13900000002");
         request.setNickname("newbie");
 
-        when(userManager.findByUsername("new-user", "default")).thenReturn(Result.failure("not found"));
+        when(userManager.findByUsername("new-user@example.com", "default")).thenReturn(Result.failure("not found"));
         when(passwordEncoder.encodePassword("Pass@123456")).thenReturn("encoded-pass");
         when(userManager.createUser(any(UserDomain.class))).thenReturn(Result.success(true));
 
@@ -126,14 +123,16 @@ class UserAuthServiceImplTest {
 
         assertTrue(result.isSuccess());
         assertNotNull(result.getResult());
-        assertEquals("new-user", result.getResult().getUsername());
+        assertEquals("new-user@example.com", result.getResult().getUsername());
+        assertEquals("new-user@example.com", result.getResult().getEmail());
         assertEquals("default", result.getResult().getTenantId());
         assertEquals(1, result.getResult().getStatus());
 
         ArgumentCaptor<UserDomain> captor = ArgumentCaptor.forClass(UserDomain.class);
         verify(userManager).createUser(captor.capture());
         UserDomain created = captor.getValue();
-        assertEquals("new-user", created.getUsername());
+        assertEquals("new-user@example.com", created.getUsername());
+        assertEquals("new-user@example.com", created.getEmail());
         assertEquals("encoded-pass", created.getPassword());
         assertEquals("default", created.getTenantId());
         assertEquals(1, created.getStatus());
@@ -144,28 +143,23 @@ class UserAuthServiceImplTest {
     }
 
     @Test
-    void registerShouldFailWhenPasswordConfirmationDoesNotMatch() {
+    void registerShouldFailWhenEmailIsMissing() {
         RegisterRequestModel request = new RegisterRequestModel();
-        request.setUsername("new-user");
-        request.setPassword("Pass@123456");
-        request.setConfirmPassword("Mismatch@123");
 
         Result<UserAuthModel> result = userAuthService.register(request);
 
         assertFalse(result.isSuccess());
-        assertEquals("两次输入的密码不一致", result.getMessage());
+        assertEquals("邮箱不能为空", result.getMessage());
     }
 
     @Test
     void registerShouldFailWhenUserAlreadyExists() {
         RegisterRequestModel request = new RegisterRequestModel();
-        request.setUsername("existing-user");
-        request.setPassword("Pass@123456");
-        request.setConfirmPassword("Pass@123456");
+        request.setEmail("existing-user@example.com");
         request.setTenantId("tenant-a");
 
-        UserDomain existing = buildUser("user-2", "existing-user", "encoded-pass", 1, "tenant-a");
-        when(userManager.findByUsername("existing-user", "tenant-a")).thenReturn(Result.success(existing));
+        UserDomain existing = buildUser("user-2", "existing-user@example.com", "encoded-pass", 1, "tenant-a");
+        when(userManager.findByUsername("existing-user@example.com", "tenant-a")).thenReturn(Result.success(existing));
 
         Result<UserAuthModel> result = userAuthService.register(request);
 
