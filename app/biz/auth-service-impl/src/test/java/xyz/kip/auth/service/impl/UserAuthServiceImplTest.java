@@ -17,10 +17,12 @@ import xyz.kip.auth.service.model.UserAuthModel;
 import xyz.kip.auth.service.utils.JwtUtil;
 import xyz.kip.auth.service.utils.PasswordEncoder;
 import xyz.kip.open.common.base.Result;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -169,6 +171,38 @@ class UserAuthServiceImplTest {
 
         assertFalse(result.isSuccess());
         assertEquals("用户已存在", result.getMessage());
+    }
+
+    @Test
+    void validateTokenShouldRejectWhenCachedTokenMissingOrOutdated() {
+        when(jwtUtil.validateToken("jwt-token")).thenReturn(true);
+        when(jwtUtil.getUserIdFromToken("jwt-token")).thenReturn("user-1");
+        when(jwtUtil.getUsernameFromToken("jwt-token")).thenReturn("alice");
+        when(cacheManager.get(RedisKeyUtil.userTokenKey("user-1"), String.class)).thenReturn("other-token");
+
+        Result<UserAuthModel> result = userAuthService.validateToken("jwt-token");
+
+        assertFalse(result.isSuccess());
+        assertEquals("Token revoked or not latest", result.getMessage());
+        verify(userManager, never()).findByUserId("user-1");
+    }
+
+    @Test
+    void validateTokenShouldAllowWhitelistedUsernameToBypassLatestTokenCheck() {
+        ReflectionTestUtils.setField(userAuthService, "tokenUserWhitelistCsv", "kipmu@kip.xyz,admin@example.com");
+
+        UserDomain user = buildUser("user-2", "kipmu@kip.xyz", "encoded-pass", 1, "default");
+        when(jwtUtil.validateToken("jwt-token")).thenReturn(true);
+        when(jwtUtil.getUserIdFromToken("jwt-token")).thenReturn("user-2");
+        when(jwtUtil.getUsernameFromToken("jwt-token")).thenReturn("kipmu@kip.xyz");
+        when(userManager.findByUserId("user-2")).thenReturn(Result.success(user));
+
+        Result<UserAuthModel> result = userAuthService.validateToken("jwt-token");
+
+        assertTrue(result.isSuccess());
+        assertNotNull(result.getResult());
+        assertEquals("kipmu@kip.xyz", result.getResult().getUsername());
+        verify(cacheManager, never()).get(RedisKeyUtil.userTokenKey("user-2"), String.class);
     }
 
     private static UserDomain buildUser(String userId, String username, String password, Integer status, String tenantId) {

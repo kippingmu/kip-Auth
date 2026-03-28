@@ -1,6 +1,9 @@
 package xyz.kip.auth.service.impl;
 
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.util.StringUtils;
 import xyz.kip.open.common.base.Result;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +22,8 @@ import xyz.kip.auth.manager.cache.CacheManager;
 import xyz.kip.auth.manager.util.RedisKeyUtil;
 
 import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,8 +31,12 @@ import java.util.Map;
  * @author xiaoshichuan
  * @version 2026-02-28
  */
+@RefreshScope
 @Service
 public class UserAuthServiceImpl implements UserAuthService {
+
+    @Value("${auth.token.user-whitelist:}")
+    private String tokenUserWhitelistCsv = "";
 
     @Resource
     private JwtUtil jwtUtil;
@@ -188,7 +197,39 @@ public class UserAuthServiceImpl implements UserAuthService {
         }
 
         String userId = jwtUtil.getUserIdFromToken(token);
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (!StringUtils.hasText(userId)) {
+            return Result.failure("无效的token");
+        }
+        if (!isTokenBypassUser(username)) {
+            String cachedToken = normalizeCachedToken(cacheManager.get(RedisKeyUtil.userTokenKey(userId), String.class));
+            if (!StringUtils.hasText(cachedToken) || !cachedToken.equals(token)) {
+                return Result.failure("Token revoked or not latest");
+            }
+        }
         return queryByUserId(userId);
+    }
+
+    private boolean isTokenBypassUser(String username) {
+        if (!StringUtils.hasText(username)) {
+            return false;
+        }
+        List<String> whitelist = Arrays.stream(tokenUserWhitelistCsv.split(","))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .toList();
+        return whitelist.contains(username);
+    }
+
+    private String normalizeCachedToken(String cachedToken) {
+        if (!StringUtils.hasText(cachedToken)) {
+            return cachedToken;
+        }
+        String normalized = cachedToken.trim();
+        if (normalized.length() >= 2 && normalized.startsWith("\"") && normalized.endsWith("\"")) {
+            normalized = normalized.substring(1, normalized.length() - 1);
+        }
+        return normalized;
     }
 
     /**
