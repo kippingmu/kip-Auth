@@ -8,6 +8,7 @@ KUBE_NAMESPACE="${KUBE_NAMESPACE:-kip-poc}"
 IMAGE_REPO="${IMAGE_REPO:-registry.cn-hangzhou.aliyuncs.com/kip-app/kip-auth}"
 IMAGE_TAG="${IMAGE_TAG:-}"
 DEPLOYMENT_NAME="${DEPLOYMENT_NAME:-kip-auth}"
+ROLLOUT_TIMEOUT="${ROLLOUT_TIMEOUT:-300s}"
 
 MYSQL_URL="${MYSQL_URL:-}"
 MYSQL_USERNAME="${MYSQL_USERNAME:-}"
@@ -70,8 +71,14 @@ apply_manifests() {
   "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" apply -f "$ROOT/deploy/k8s/service.yaml"
 }
 
+clear_legacy_node_selector() {
+  "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" -n "$KUBE_NAMESPACE" patch deployment "$DEPLOYMENT_NAME" \
+    --type merge \
+    -p '{"spec":{"template":{"spec":{"nodeSelector":null}}}}' >/dev/null
+}
+
 rollout_wait() {
-  "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" -n "$KUBE_NAMESPACE" rollout status "deploy/${DEPLOYMENT_NAME}" --timeout=180s
+  "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" -n "$KUBE_NAMESPACE" rollout status "deploy/${DEPLOYMENT_NAME}" --timeout="$ROLLOUT_TIMEOUT"
 }
 
 main() {
@@ -94,6 +101,7 @@ main() {
   fi
 
   apply_manifests
+  clear_legacy_node_selector
   rollout_wait
 }
 
