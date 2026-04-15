@@ -6,6 +6,7 @@ metadata:
   labels:
     app: kip-auth
 spec:
+  revisionHistoryLimit: 5
   replicas: 1
   selector:
     matchLabels:
@@ -17,8 +18,8 @@ spec:
     spec:
       containers:
         - name: kip-auth
-          image: registry.cn-hangzhou.aliyuncs.com/kip-app/kip-auth:k8s-poc-local
-          imagePullPolicy: Never
+          image: __IMAGE_REPO__:__IMAGE_TAG__
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 5001
@@ -56,6 +57,4 @@ spec:
               port: http
             failureThreshold: 30
             periodSeconds: 5
-      nodeSelector:
-        kubernetes.io/hostname: ubuntu
       terminationGracePeriodSeconds: 60

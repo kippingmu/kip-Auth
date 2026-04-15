@@ -9,6 +9,14 @@ on:
         description: "Optional image tag to deploy (default: current commit sha12)"
         required: false
         type: string
+      nacos_mode:
+        description: "Publish or verify the K8s Nacos config"
+        required: false
+        type: choice
+        default: publish
+        options:
+          - publish
+          - verify
 
 concurrency:
   group: prod-deploy-kip-auth
@@ -24,18 +32,29 @@ jobs:
       DOCKER_BUILDKIT: "1"
       BUILDKIT_PROGRESS: plain
       IMAGE_REPO: registry.cn-hangzhou.aliyuncs.com/kip-app/kip-auth
-      DEPLOY_PATH: /home/xiaoshichuan/apps/kip-auth
-      HEALTHCHECK_URL: http://127.0.0.1:5001/actuator/health
+      KUBECONFIG_PATH: /etc/kubernetes/admin.conf
+      KUBE_NAMESPACE: kip-poc
+      DEPLOYMENT_NAME: kip-auth
+      SERVICE_NAME: kip-auth
+      APP_LABEL: kip-auth
+      HEALTH_PORT: "5001"
+      NACOS_ADDR: ${{ secrets.NACOS_ADDR || '10.42.0.125:8848' }}
+      NACOS_USER: ${{ secrets.NACOS_USER || 'nacos' }}
+      NACOS_PASS: ${{ secrets.NACOS_PASS || 'nacos8848' }}
+      NACOS_NAMESPACE: 74a3fe73-35c1-474e-ade8-9bc460b3f398
+      NACOS_GROUP: K8S_POC
+      NACOS_DATA_ID: kip-auth-k8s.yml
+      MYSQL_URL: ${{ secrets.MYSQL_URL }}
+      MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+      AUTH_JWT_SECRET: ${{ secrets.AUTH_JWT_SECRET }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-
-      - name: Ensure SSH remote
-        shell: bash
-        run: bash ./scripts/ops/git-ensure-ssh-origin.sh
 
       - name: Resolve image variables
         shell: bash
@@ -58,11 +77,12 @@ jobs:
           REGISTRY_USERNAME="${{ secrets.ALIYUN_REGISTRY_USERNAME }}"
           REGISTRY_PASSWORD="${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
 
-          if [ -n "${REGISTRY_USERNAME}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
-            echo "${REGISTRY_PASSWORD}" | docker login registry.cn-hangzhou.aliyuncs.com -u "${REGISTRY_USERNAME}" --password-stdin
-          else
-            echo "Registry secrets not configured; reusing existing docker login on runner host"
+          if [ -z "${REGISTRY_USERNAME}" ] || [ -z "${REGISTRY_PASSWORD}" ]; then
+            echo "Missing ACR credentials" >&2
+            exit 1
           fi
+
+          echo "${REGISTRY_PASSWORD}" | docker login registry.cn-hangzhou.aliyuncs.com -u "${REGISTRY_USERNAME}" --password-stdin
 
       - name: Prepare kip-open-common for docker build
         shell: bash
@@ -78,94 +98,59 @@ jobs:
           cp "$DEP_DIR/kip-open-common-1.0-SNAPSHOT.pom" deps/
           ls -lh deps/
 
+      - name: Sync Nacos config
+        shell: bash
+        run: |
+          set -euo pipefail
+          MODE="${{ github.event.inputs.nacos_mode }}"
+          if [ -z "$MODE" ]; then
+            MODE="publish"
+          fi
+          ./scripts/ops/k8s/nacos-sync.sh "$MODE"
+
       - name: Build image
         shell: bash
         run: |
           set -euo pipefail
-          docker build --progress=plain -t "${IMAGE_REPO}:${IMAGE_TAG}" -t "${IMAGE_REPO}:latest" .
+          docker build --progress=plain -t "${FULL_IMAGE}" .
 
       - name: Push image
-        id: push_image
-        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
-          docker push "${IMAGE_REPO}:${IMAGE_TAG}"
-          docker push "${IMAGE_REPO}:latest"
+          docker push "${FULL_IMAGE}"
 
-      - name: Deploy with docker compose
+      - name: Deploy to Kubernetes
         shell: bash
         run: |
           set -euo pipefail
-          STATE_DIR="${DEPLOY_PATH}/.deploy-state"
-          CURRENT_FILE="${STATE_DIR}/current_image_tag"
+          sudo -E ./scripts/ops/k8s/deploy.sh
 
-          test -d "${DEPLOY_PATH}"
-          test -f "${DEPLOY_PATH}/docker-compose.yml"
-
-          mkdir -p "${STATE_DIR}"
-          PREV_TAG=""
-          if [ -f "${CURRENT_FILE}" ]; then
-            PREV_TAG="$(cat "${CURRENT_FILE}")"
-          fi
-
-          echo "PREV_TAG=${PREV_TAG}" >> "$GITHUB_ENV"
-
-          cd "${DEPLOY_PATH}"
-          export IMAGE_TAG
-
-          if [ "${{ steps.push_image.outcome }}" = "success" ]; then
-            docker compose pull
-          else
-            echo "Registry push failed; deploying the freshly built local image on the runner host"
-            docker image inspect "${FULL_IMAGE}" >/dev/null
-          fi
-
-          docker compose up -d
-
-      - name: Health check
+      - name: Auth smoke verification
         shell: bash
         run: |
           set -euo pipefail
-          for i in $(seq 1 20); do
-            if curl -fsS "${HEALTHCHECK_URL}" >/dev/null; then
-              echo "Health check passed"
-              exit 0
-            fi
-            sleep 5
-          done
-
-          echo "Health check failed"
-          exit 1
+          sudo -E ./scripts/ops/k8s/smoke.sh
 
       - name: Persist deployed tag
         if: success()
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "${DEPLOY_PATH}/.deploy-state"
-          printf "%s" "${IMAGE_TAG}" > "${DEPLOY_PATH}/.deploy-state/current_image_tag"
+          STATE_DIR="${GITHUB_WORKSPACE}/.deploy-state"
+          mkdir -p "${STATE_DIR}"
+          printf "%s" "${IMAGE_TAG}" > "${STATE_DIR}/current_image_tag"
 
       - name: Rollback on failure
-        if: failure() && env.PREV_TAG != ''
+        if: failure()
         shell: bash
         run: |
           set -euo pipefail
-          cd "${DEPLOY_PATH}"
-          export IMAGE_TAG="${PREV_TAG}"
-          docker compose pull
-          docker compose up -d
+          sudo -E ./scripts/ops/k8s/rollback.sh
 
       - name: Docker logout
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          REGISTRY_USERNAME="${{ secrets.ALIYUN_REGISTRY_USERNAME }}"
-          REGISTRY_PASSWORD="${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
-
-          if [ -n "${REGISTRY_USERNAME}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
-            docker logout registry.cn-hangzhou.aliyuncs.com || true
-          else
-            echo "Skipping docker logout because workflow reused runner host login"
-          fi
+          docker logout registry.cn-hangzhou.aliyuncs.com || true
