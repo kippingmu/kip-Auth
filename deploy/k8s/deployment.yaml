@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kip-auth
+  namespace: kip-poc
+  labels:
+    app: kip-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kip-auth
+  template:
+    metadata:
+      labels:
+        app: kip-auth
+    spec:
+      containers:
+        - name: kip-auth
+          image: registry.cn-hangzhou.aliyuncs.com/kip-app/kip-auth:k8s-poc-local
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 5001
+          envFrom:
+            - configMapRef:
+                name: kip-auth-config
+            - secretRef:
+                name: kip-auth-secret
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 6
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+      nodeSelector:
+        kubernetes.io/hostname: ubuntu
+      terminationGracePeriodSeconds: 60

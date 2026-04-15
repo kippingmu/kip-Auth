@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
-NACOS_ADDR="10.42.0.125:8848"
-NACOS_USER="nacos"
-NACOS_PASS="nacos8848"
-GROUP="DEFAULT_GROUP"
-TENANT=""
-DEFAULT_DATA_ID="kip-auth-dev.yml"
+NACOS_ADDR="${NACOS_ADDR:-10.42.0.125:8848}"
+NACOS_USER="${NACOS_USER:-nacos}"
+NACOS_PASS="${NACOS_PASS:-nacos8848}"
+GROUP="${NACOS_GROUP:-DEFAULT_GROUP}"
+TENANT="${NACOS_NAMESPACE:-}"
+DEFAULT_DATA_ID="${NACOS_DATA_ID:-kip-auth-dev.yml}"
 
 usage() {
   echo "Usage: $0 get [dataId]"
   echo "       $0 put [dataId] <file>"
   echo "       $0 put [dataId] --stdin"
+  echo
+  echo "Environment overrides:"
+  echo "  NACOS_ADDR NACOS_USER NACOS_PASS NACOS_GROUP NACOS_NAMESPACE NACOS_DATA_ID"
 }
 
 token() {

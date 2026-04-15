@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 10000
+      validation-timeout: 5000
+  data:
+    redis:
+      database: 0
+      timeout: 5s
+      connect-timeout: 5s
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+        shutdown-timeout: 100ms
+  redis:
+    redisson:
+      config: |
+        singleServerConfig:
+          address: "redis://${REDIS_HOST}:${REDIS_PORT:6379}"
+          password: "${REDIS_PASSWORD:}"
+          database: 0
+          connectTimeout: 10000
+          timeout: 10000
+          connectionMinimumIdleSize: 4
+          connectionPoolSize: 8
+          subscriptionConnectionMinimumIdleSize: 1
+          subscriptionConnectionPoolSize: 2
+          pingConnectionInterval: 30000
+          keepAlive: true
+        threads: 8
+        nettyThreads: 8
+
+auth:
+  jwt:
+    secret: ${AUTH_JWT_SECRET}
+    expiration: 86400000
+    prefix: "Bearer "
+    header: Authorization
+  token:
+    user-whitelist: kipmu@kip.xyz
+
+config:
+  machineId: 1
+  idSegment: ""

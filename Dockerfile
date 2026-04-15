@@ -31,6 +31,10 @@ RUN --mount=type=cache,target=/root/.m2 \
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /build/app/auth-web/target/auth-web-1.0-SNAPSHOT.jar /app/app.jar
 
 EXPOSE 5001

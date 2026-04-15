@@ -1,0 +1,32 @@
+server:
+  port: ${SERVER_PORT:5001}
+
+spring:
+  cloud:
+    service-registry:
+      auto-registration:
+        enabled: false
+    nacos:
+      discovery:
+        enabled: false
+        register-enabled: false
+    sentinel:
+      enabled: false
+    zookeeper:
+      enabled: false
+  datasource:
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+logging:
+  level:
+    root: info
+  file:
+    path: /tmp/kip-auth/logs
+
