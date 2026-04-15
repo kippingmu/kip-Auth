@@ -34,6 +34,7 @@ jobs:
       IMAGE_REPO: registry.cn-hangzhou.aliyuncs.com/kip-app/kip-auth
       KUBECONFIG_PATH: /etc/kubernetes/admin.conf
       KUBE_NAMESPACE: kip-poc
+      IMAGE_PULL_SECRET_NAME: kip-acr-pull
       DEPLOYMENT_NAME: kip-auth
       SERVICE_NAME: kip-auth
       APP_LABEL: kip-auth
@@ -83,6 +84,17 @@ jobs:
           fi
 
           echo "${REGISTRY_PASSWORD}" | docker login registry.cn-hangzhou.aliyuncs.com -u "${REGISTRY_USERNAME}" --password-stdin
+
+      - name: Ensure K8s image pull secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubectl get namespace "${KUBE_NAMESPACE}" >/dev/null 2>&1 || kubectl create namespace "${KUBE_NAMESPACE}"
+          kubectl -n "${KUBE_NAMESPACE}" create secret docker-registry "${IMAGE_PULL_SECRET_NAME}" \
+            --docker-server="registry.cn-hangzhou.aliyuncs.com" \
+            --docker-username="${{ secrets.ALIYUN_REGISTRY_USERNAME }}" \
+            --docker-password="${{ secrets.ALIYUN_REGISTRY_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Prepare kip-open-common for docker build
         shell: bash

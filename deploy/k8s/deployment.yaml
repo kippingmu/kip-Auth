@@ -16,6 +16,8 @@ spec:
       labels:
         app: kip-auth
     spec:
+      imagePullSecrets:
+        - name: kip-acr-pull
       containers:
         - name: kip-auth
           image: __IMAGE_REPO__:__IMAGE_TAG__
