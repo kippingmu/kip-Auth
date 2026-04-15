@@ -65,7 +65,7 @@ case "$MODE" in
     NACOS_GROUP="$NACOS_GROUP" \
     NACOS_NAMESPACE="$NACOS_NAMESPACE" \
     NACOS_DATA_ID="$NACOS_DATA_ID" \
-      "$ROOT/scripts/ops/nacos-config.sh" put "$DATA_FILE"
+      "$ROOT/scripts/ops/nacos-config.sh" put "$NACOS_DATA_ID" "$DATA_FILE"
     for _ in 1 2 3 4 5; do
       if verify_remote; then
         exit 0
