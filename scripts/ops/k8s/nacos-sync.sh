@@ -39,7 +39,15 @@ verify_remote() {
   NACOS_NAMESPACE="$NACOS_NAMESPACE" \
     NACOS_DATA_ID="$NACOS_DATA_ID" \
       "$ROOT/scripts/ops/nacos-config.sh" get "$NACOS_DATA_ID" > "$TMP"
-  if diff -u "$DATA_FILE" "$TMP"; then
+  if python3 - "$DATA_FILE" "$TMP" <<'PY'
+import pathlib
+import sys
+
+left = pathlib.Path(sys.argv[1]).read_text().rstrip()
+right = pathlib.Path(sys.argv[2]).read_text().rstrip()
+sys.exit(0 if left == right else 1)
+PY
+  then
     STATUS=0
   else
     STATUS=$?
