@@ -27,6 +27,14 @@ require_value() {
   fi
 }
 
+using_existing_secret() {
+  "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" -n "$KUBE_NAMESPACE" get secret kip-auth-secret >/dev/null 2>&1
+}
+
+should_render_secret() {
+  [ -n "$MYSQL_URL" ] || [ -n "$MYSQL_USERNAME" ] || [ -n "$MYSQL_PASSWORD" ] || [ -n "$REDIS_PASSWORD" ] || [ -n "$AUTH_JWT_SECRET" ]
+}
+
 render_deployment() {
   sed \
     -e "s#__IMAGE_REPO__#${IMAGE_REPO}#g" \
@@ -55,7 +63,9 @@ render_secret() {
 apply_manifests() {
   "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" apply -f "$ROOT/deploy/k8s/namespace.yaml"
   "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" apply -f "$WORK_DIR/configmap.yaml"
-  "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" apply -f "$WORK_DIR/secret.yaml"
+  if [ -f "$WORK_DIR/secret.yaml" ]; then
+    "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" apply -f "$WORK_DIR/secret.yaml"
+  fi
   "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" apply -f "$WORK_DIR/deployment.yaml"
   "$KUBECTL" --kubeconfig "$KUBECONFIG_PATH" apply -f "$ROOT/deploy/k8s/service.yaml"
 }
@@ -67,15 +77,22 @@ rollout_wait() {
 main() {
   require_value IMAGE_TAG "$IMAGE_TAG"
   require_value IMAGE_REPO "$IMAGE_REPO"
-  require_value MYSQL_URL "$MYSQL_URL"
-  require_value MYSQL_USERNAME "$MYSQL_USERNAME"
-  require_value MYSQL_PASSWORD "$MYSQL_PASSWORD"
-  require_value REDIS_PASSWORD "$REDIS_PASSWORD"
-  require_value AUTH_JWT_SECRET "$AUTH_JWT_SECRET"
 
   render_deployment
   render_configmap
-  render_secret
+
+  if should_render_secret; then
+    require_value MYSQL_URL "$MYSQL_URL"
+    require_value MYSQL_USERNAME "$MYSQL_USERNAME"
+    require_value MYSQL_PASSWORD "$MYSQL_PASSWORD"
+    require_value REDIS_PASSWORD "$REDIS_PASSWORD"
+    require_value AUTH_JWT_SECRET "$AUTH_JWT_SECRET"
+    render_secret
+  elif ! using_existing_secret; then
+    echo "Missing kip-auth-secret in namespace ${KUBE_NAMESPACE} and no replacement secret values were provided." >&2
+    exit 1
+  fi
+
   apply_manifests
   rollout_wait
 }
