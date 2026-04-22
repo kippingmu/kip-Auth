@@ -340,6 +340,7 @@ public class UserAuthController {
         response.setToken(model.getToken());
         response.setTokenType(model.getTokenType());
         response.setExpiresIn(model.getExpiresIn());
+        response.setRoleCodes(model.getRoleCodes());
         return response;
     }
 
@@ -365,6 +366,7 @@ public class UserAuthController {
         response.setNickname(model.getNickname());
         response.setStatus(model.getStatus());
         response.setTenantId(model.getTenantId());
+        response.setRoleCodes(model.getRoleCodes());
         return response;
     }
 
@@ -377,6 +379,7 @@ public class UserAuthController {
         response.setNickname(model.getNickname());
         response.setStatus(model.getStatus());
         response.setTenantId(model.getTenantId());
+        response.setRoleCodes(model.getRoleCodes());
         return response;
     }
 
@@ -389,6 +392,7 @@ public class UserAuthController {
         model.setNickname(request.getNickname());
         model.setStatus(request.getStatus());
         model.setTenantId(request.getTenantId());
+        model.setRoleCodes(request.getRoleCodes());
         return model;
     }
 

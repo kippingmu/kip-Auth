@@ -61,9 +61,8 @@ public class UserAuthServiceImpl implements UserAuthService {
             return Result.failure("用户名和密码不能为空");
         }
 
-        // 查询用户（DB by tenant）
-        String tenantId = loginRequest.getTenantId() != null ? loginRequest.getTenantId() : "default";
-        Result<UserDomain> dbRes = userManager.findByUsername(loginRequest.getUsername(), tenantId);
+        // C 端用户按账号/邮箱直接查询，不再按租户隔离。
+        Result<UserDomain> dbRes = userManager.findByUsername(loginRequest.getUsername());
         if (!dbRes.isSuccess() || dbRes.getResult() == null) {
             return Result.failure("用户名或密码错误");
         }
@@ -81,7 +80,7 @@ public class UserAuthServiceImpl implements UserAuthService {
 
         // 生成JWT token
         Map<String, Object> claims = new HashMap<>();
-        claims.put("tenantId", user.getTenantId());
+        claims.put("roleCodes", user.getRoleCodes());
         String token = jwtUtil.generateToken(user.getUserId(), user.getUsername(), claims);
 
         // 构建响应
@@ -91,6 +90,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         response.setEmail(user.getEmail());
         response.setPhone(user.getPhone());
         response.setNickname(user.getNickname());
+        response.setRoleCodes(user.getRoleCodes());
         response.setToken(token);
         response.setTokenType("Bearer");
         response.setExpiresIn(jwtUtil.getExpiresIn());
@@ -108,6 +108,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         cacheUser.setPhone(user.getPhone());
         cacheUser.setNickname(user.getNickname());
         cacheUser.setTenantId(user.getTenantId());
+        cacheUser.setRoleCodes(user.getRoleCodes());
         cacheManager.set(infoKey, cacheUser, ttl);
 
         return Result.success(response);
@@ -123,10 +124,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         }
 
         String account = registerRequest.getEmail().trim();
-        String tenant = registerRequest.getTenantId() != null && !registerRequest.getTenantId().isBlank()
-                ? registerRequest.getTenantId()
-                : "default";
-        Result<UserDomain> exists = userManager.findByUsername(account, tenant);
+        Result<UserDomain> exists = userManager.findByUsername(account);
         if (exists.isSuccess() && exists.getResult() != null) {
             return Result.failure("用户已存在");
         }
@@ -143,7 +141,8 @@ public class UserAuthServiceImpl implements UserAuthService {
         d.setPassword(encoded);
         d.setSalt(salt);
         d.setStatus(1);
-        d.setTenantId(tenant);
+        d.setRoleCodes(List.of("USER"));
+        d.setTenantId("default");
         Result<Boolean> created = userManager.createUser(d);
         if (!created.isSuccess() || !Boolean.TRUE.equals(created.getResult())) {
             return Result.failure(created.getMessage() != null ? created.getMessage() : "创建用户失败");
@@ -156,7 +155,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         result.setPhone(generatedPhone);
         result.setNickname(registerRequest.getNickname());
         result.setStatus(1);
-        result.setTenantId(tenant);
+        result.setRoleCodes(List.of("USER"));
         return Result.success(result);
     }
 
@@ -184,6 +183,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         m.setPassword(d.getPassword());
         m.setStatus(d.getStatus());
         m.setTenantId(d.getTenantId());
+        m.setRoleCodes(d.getRoleCodes());
         return m;
     }
 
@@ -237,7 +237,7 @@ public class UserAuthServiceImpl implements UserAuthService {
      */
     @Override
     public Result<UserAuthModel> queryByUsername(String username) {
-        Result<UserDomain> res = userManager.findByUsername(username, "default");
+        Result<UserDomain> res = userManager.findByUsername(username);
         if (res.isSuccess() && res.getResult() != null) {
             return Result.success(toModel(res.getResult()));
         }

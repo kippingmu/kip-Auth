@@ -7,6 +7,8 @@ import xyz.kip.auth.manager.UserManager;
 import xyz.kip.auth.manager.domain.UserDomain;
 import xyz.kip.open.common.base.Result;
 
+import java.util.List;
+
 /**
  * Implementation of UserManager backed by MyBatis mappers.
  * @author xiaoshichuan
@@ -22,12 +24,11 @@ public class UserManagerImpl implements UserManager {
     /**
      * 根据用户名查询用户
      * @param username 用户名
-     * @param tenantId 租户ID
      * @return  用户
      */
     @Override
-    public Result<UserDomain> findByUsername(String username, String tenantId) {
-        UserEntity entity = userMapper.selectByUsername(username, tenantId);
+    public Result<UserDomain> findByUsername(String username) {
+        UserEntity entity = userMapper.selectByUsername(username);
         if (entity == null) {
             return Result.success(null);
         }
@@ -63,7 +64,8 @@ public class UserManagerImpl implements UserManager {
         e.setPassword(user.getPassword());
         e.setSalt(user.getSalt());
         e.setStatus(user.getStatus());
-        e.setTenantId(user.getTenantId());
+        e.setRoleCode(firstRoleCode(user.getRoleCodes()));
+        e.setTenantId("default");
         e.setCreateBy("system");
         e.setUpdateBy("system");
         int rows = userMapper.insert(e);
@@ -83,6 +85,7 @@ public class UserManagerImpl implements UserManager {
         e.setPhone(user.getPhone());
         e.setEmail(user.getEmail());
         e.setStatus(user.getStatus());
+        e.setRoleCode(firstRoleCode(user.getRoleCodes()));
         e.setUpdateBy("system");
         int rows = userMapper.update(e);
         return rows > 0 ? Result.success(true) : Result.failure("更新用户失败");
@@ -136,6 +139,21 @@ public class UserManagerImpl implements UserManager {
         d.setSalt(entity.getSalt());
         d.setStatus(entity.getStatus());
         d.setTenantId(entity.getTenantId());
+        d.setRoleCodes(roleCodes(entity.getRoleCode()));
         return d;
+    }
+
+    private static String firstRoleCode(List<String> roleCodes) {
+        if (roleCodes == null || roleCodes.isEmpty() || roleCodes.get(0) == null || roleCodes.get(0).isBlank()) {
+            return "USER";
+        }
+        return roleCodes.get(0).trim().toUpperCase();
+    }
+
+    private static List<String> roleCodes(String roleCode) {
+        if (roleCode == null || roleCode.isBlank()) {
+            return List.of("USER");
+        }
+        return List.of(roleCode.trim().toUpperCase());
     }
 }

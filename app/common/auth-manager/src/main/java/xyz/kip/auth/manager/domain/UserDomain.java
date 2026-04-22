@@ -2,6 +2,8 @@ package xyz.kip.auth.manager.domain;
 
 import xyz.kip.open.common.base.ToString;
 
+import java.util.List;
+
 /**
  * Domain object representing user auth info.
  */
@@ -14,6 +16,7 @@ public class UserDomain extends ToString {
     private String salt;
     private Integer status;
     private String tenantId;
+    private List<String> roleCodes;
 
     public String getUserId() {
         return userId;
@@ -77,5 +80,13 @@ public class UserDomain extends ToString {
 
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public List<String> getRoleCodes() {
+        return roleCodes;
+    }
+
+    public void setRoleCodes(List<String> roleCodes) {
+        this.roleCodes = roleCodes;
     }
 }

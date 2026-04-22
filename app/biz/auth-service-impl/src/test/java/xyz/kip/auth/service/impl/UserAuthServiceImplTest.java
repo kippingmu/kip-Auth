@@ -54,7 +54,7 @@ class UserAuthServiceImplTest {
         user.setEmail("alice@example.com");
         user.setPhone("13900000001");
 
-        when(userManager.findByUsername("alice", "default")).thenReturn(Result.success(user));
+        when(userManager.findByUsername("alice")).thenReturn(Result.success(user));
         when(passwordEncoder.matchPassword("Pass@123456", "encoded-pass")).thenReturn(true);
         when(jwtUtil.generateToken(eq("user-1"), eq("alice"), any())).thenReturn("jwt-token");
         when(jwtUtil.getExpiresIn()).thenReturn(3600L);
@@ -66,7 +66,7 @@ class UserAuthServiceImplTest {
         assertEquals("jwt-token", result.getResult().getToken());
         assertEquals("Bearer", result.getResult().getTokenType());
         assertEquals(3600L, result.getResult().getExpiresIn());
-        verify(userManager).findByUsername("alice", "default");
+        verify(userManager).findByUsername("alice");
         verify(cacheManager).set(RedisKeyUtil.userTokenKey("user-1"), "jwt-token", 3600L);
 
         ArgumentCaptor<Object> cachedUserCaptor = ArgumentCaptor.forClass(Object.class);
@@ -86,7 +86,7 @@ class UserAuthServiceImplTest {
         request.setPassword("wrong-password");
 
         UserDomain user = buildUser("user-1", "alice", "encoded-pass", 1, "default");
-        when(userManager.findByUsername("alice", "default")).thenReturn(Result.success(user));
+        when(userManager.findByUsername("alice")).thenReturn(Result.success(user));
         when(passwordEncoder.matchPassword("wrong-password", "encoded-pass")).thenReturn(false);
 
         Result<LoginResponseModel> result = userAuthService.login(request);
@@ -102,7 +102,7 @@ class UserAuthServiceImplTest {
         request.setPassword("Pass@123456");
 
         UserDomain user = buildUser("user-1", "alice", "encoded-pass", 0, "default");
-        when(userManager.findByUsername("alice", "default")).thenReturn(Result.success(user));
+        when(userManager.findByUsername("alice")).thenReturn(Result.success(user));
 
         Result<LoginResponseModel> result = userAuthService.login(request);
 
@@ -117,7 +117,7 @@ class UserAuthServiceImplTest {
         request.setPhone("13900000002");
         request.setNickname("newbie");
 
-        when(userManager.findByUsername("new-user@example.com", "default")).thenReturn(Result.failure("not found"));
+        when(userManager.findByUsername("new-user@example.com")).thenReturn(Result.failure("not found"));
         when(passwordEncoder.encodePassword("Pass@123456")).thenReturn("encoded-pass");
         when(userManager.createUser(any(UserDomain.class))).thenReturn(Result.success(true));
 
@@ -127,7 +127,8 @@ class UserAuthServiceImplTest {
         assertNotNull(result.getResult());
         assertEquals("new-user@example.com", result.getResult().getUsername());
         assertEquals("new-user@example.com", result.getResult().getEmail());
-        assertEquals("default", result.getResult().getTenantId());
+        assertNull(result.getResult().getTenantId());
+        assertEquals(java.util.List.of("USER"), result.getResult().getRoleCodes());
         assertEquals(1, result.getResult().getStatus());
 
         ArgumentCaptor<UserDomain> captor = ArgumentCaptor.forClass(UserDomain.class);
@@ -165,7 +166,7 @@ class UserAuthServiceImplTest {
         request.setTenantId("tenant-a");
 
         UserDomain existing = buildUser("user-2", "existing-user@example.com", "encoded-pass", 1, "tenant-a");
-        when(userManager.findByUsername("existing-user@example.com", "tenant-a")).thenReturn(Result.success(existing));
+        when(userManager.findByUsername("existing-user@example.com")).thenReturn(Result.success(existing));
 
         Result<UserAuthModel> result = userAuthService.register(request);
 

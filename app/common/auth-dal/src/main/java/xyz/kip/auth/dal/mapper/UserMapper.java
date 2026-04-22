@@ -32,13 +32,12 @@ public interface UserMapper {
     UserEntity selectByPhoneAndTenant(@Param("phone") String phone, @Param("tenantId") String tenantId);
 
     /**
-     * 根据用户名查询用户.
+     * 根据用户名或邮箱查询 C 端用户.
      *
      * @param username 用户名
-     * @param tenantId 租户ID
      * @return 用户实体
      */
-    UserEntity selectByUsername(@Param("username") String username, @Param("tenantId") String tenantId);
+    UserEntity selectByUsername(@Param("username") String username);
 
     /**
      * 插入用户.

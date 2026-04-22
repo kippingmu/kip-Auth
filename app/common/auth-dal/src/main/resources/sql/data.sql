@@ -45,8 +45,8 @@ VALUES
 ('role_user', 'perm_biz_view', 'system');
 
 -- 插入默认管理员用户 (密码: admin123, 需要在应用层加密)
-INSERT INTO `auth_user` (`user_id`, `username`, `phone`, `email`, `password`, `salt`, `status`, `tenant_id`, `create_by`)
-VALUES ('user_admin', 'admin', '13800138000', 'admin@example.com', 'CHANGE_ME', 'CHANGE_ME', 1, 'default', 'system');
+INSERT INTO `auth_user` (`user_id`, `username`, `phone`, `email`, `password`, `salt`, `status`, `role_code`, `tenant_id`, `create_by`)
+VALUES ('user_admin', 'admin', '13800138000', 'admin@example.com', 'CHANGE_ME', 'CHANGE_ME', 1, 'ADMIN', 'default', 'system');
 
 -- 为管理员用户分配管理员角色
 INSERT INTO `auth_user_role` (`user_id`, `role_id`, `tenant_id`, `create_by`)

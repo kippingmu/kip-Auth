@@ -11,7 +11,7 @@ public interface UserManager {
     /**
      * Find user by username and tenant.
      */
-    Result<UserDomain> findByUsername(String username, String tenantId);
+    Result<UserDomain> findByUsername(String username);
 
     /**
      * Find user by userId.

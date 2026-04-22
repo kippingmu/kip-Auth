@@ -2,6 +2,8 @@ package xyz.kip.auth.service.model;
 
 import xyz.kip.open.common.base.ToString;
 
+import java.util.List;
+
 /**
  * 用户认证信息DTO
  * @author xiaoshichuan
@@ -47,6 +49,7 @@ public class UserAuthModel extends ToString {
      * 租户ID
      */
     private String tenantId;
+    private List<String> roleCodes;
 
     public String getUserId() {
         return userId;
@@ -111,5 +114,12 @@ public class UserAuthModel extends ToString {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
-}
 
+    public List<String> getRoleCodes() {
+        return roleCodes;
+    }
+
+    public void setRoleCodes(List<String> roleCodes) {
+        this.roleCodes = roleCodes;
+    }
+}

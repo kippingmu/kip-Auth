@@ -2,6 +2,8 @@ package xyz.kip.auth.service.model;
 
 import xyz.kip.open.common.base.ToString;
 
+import java.util.List;
+
 /**
  * 登录响应DTO
  * @author xiaoshichuan
@@ -47,6 +49,7 @@ public class LoginResponseModel extends ToString {
      * 过期时间（单位：秒）
      */
     private Long expiresIn;
+    private List<String> roleCodes;
 
     public String getUserId() {
         return userId;
@@ -111,5 +114,12 @@ public class LoginResponseModel extends ToString {
     public void setExpiresIn(Long expiresIn) {
         this.expiresIn = expiresIn;
     }
-}
 
+    public List<String> getRoleCodes() {
+        return roleCodes;
+    }
+
+    public void setRoleCodes(List<String> roleCodes) {
+        this.roleCodes = roleCodes;
+    }
+}

@@ -49,6 +49,11 @@ public class UserEntity {
     private Integer status;
 
     /**
+     * C 端用户角色编码：USER-普通用户，ADMIN-管理员
+     */
+    private String roleCode;
+
+    /**
      * 租户ID
      */
     private String tenantId;
@@ -135,6 +140,14 @@ public class UserEntity {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public String getRoleCode() {
+        return roleCode;
+    }
+
+    public void setRoleCode(String roleCode) {
+        this.roleCode = roleCode;
     }
 
     public String getTenantId() {
