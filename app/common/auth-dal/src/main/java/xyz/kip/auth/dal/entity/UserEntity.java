@@ -19,19 +19,14 @@ public class UserEntity {
     private String userId;
 
     /**
-     * 用户名
-     */
-    private String username;
-
-    /**
      * 手机号
      */
     private String phone;
 
     /**
-     * 邮箱
+     * 昵称
      */
-    private String email;
+    private String nickname;
 
     /**
      * 加密后的密码
@@ -52,11 +47,6 @@ public class UserEntity {
      * C 端用户角色编码：USER-普通用户，ADMIN-管理员
      */
     private String roleCode;
-
-    /**
-     * 租户ID
-     */
-    private String tenantId;
 
     /**
      * 创建时间
@@ -94,14 +84,6 @@ public class UserEntity {
         this.userId = userId;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getPhone() {
         return phone;
     }
@@ -110,12 +92,12 @@ public class UserEntity {
         this.phone = phone;
     }
 
-    public String getEmail() {
-        return email;
+    public String getNickname() {
+        return nickname;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public String getPassword() {
@@ -148,14 +130,6 @@ public class UserEntity {
 
     public void setRoleCode(String roleCode) {
         this.roleCode = roleCode;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public LocalDateTime getCreateTime() {

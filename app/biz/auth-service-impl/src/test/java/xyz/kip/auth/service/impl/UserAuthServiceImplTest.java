@@ -19,9 +19,12 @@ import xyz.kip.auth.service.utils.PasswordEncoder;
 import xyz.kip.open.common.base.Result;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,16 +50,16 @@ class UserAuthServiceImplTest {
     @Test
     void loginShouldReturnTokenAndCacheUserInfo() {
         LoginRequestModel request = new LoginRequestModel();
-        request.setUsername("alice");
+        request.setUsername("13900000001");
         request.setPassword("Pass@123456");
 
-        UserDomain user = buildUser("user-1", "alice", "encoded-pass", 1, "default");
-        user.setEmail("alice@example.com");
+        UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 1, null);
         user.setPhone("13900000001");
+        user.setNickname("Alice");
 
-        when(userManager.findByUsername("alice")).thenReturn(Result.success(user));
+        when(userManager.findByUsername("13900000001")).thenReturn(Result.success(user));
         when(passwordEncoder.matchPassword("Pass@123456", "encoded-pass")).thenReturn(true);
-        when(jwtUtil.generateToken(eq("user-1"), eq("alice"), any())).thenReturn("jwt-token");
+        when(jwtUtil.generateToken(eq("user-1"), eq("13900000001"), any())).thenReturn("jwt-token");
         when(jwtUtil.getExpiresIn()).thenReturn(3600L);
 
         Result<LoginResponseModel> result = userAuthService.login(request);
@@ -66,7 +69,7 @@ class UserAuthServiceImplTest {
         assertEquals("jwt-token", result.getResult().getToken());
         assertEquals("Bearer", result.getResult().getTokenType());
         assertEquals(3600L, result.getResult().getExpiresIn());
-        verify(userManager).findByUsername("alice");
+        verify(userManager).findByUsername("13900000001");
         verify(cacheManager).set(RedisKeyUtil.userTokenKey("user-1"), "jwt-token", 3600L);
 
         ArgumentCaptor<Object> cachedUserCaptor = ArgumentCaptor.forClass(Object.class);
@@ -75,34 +78,34 @@ class UserAuthServiceImplTest {
         assertInstanceOf(UserAuthModel.class, cachedValue);
         UserAuthModel cachedUser = (UserAuthModel) cachedValue;
         assertEquals("user-1", cachedUser.getUserId());
-        assertEquals("alice", cachedUser.getUsername());
-        assertEquals("default", cachedUser.getTenantId());
+        assertEquals("13900000001", cachedUser.getUsername());
+        assertEquals("Alice", cachedUser.getNickname());
     }
 
     @Test
     void loginShouldFailWhenPasswordDoesNotMatch() {
         LoginRequestModel request = new LoginRequestModel();
-        request.setUsername("alice");
+        request.setUsername("13900000001");
         request.setPassword("wrong-password");
 
-        UserDomain user = buildUser("user-1", "alice", "encoded-pass", 1, "default");
-        when(userManager.findByUsername("alice")).thenReturn(Result.success(user));
+        UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 1, null);
+        when(userManager.findByUsername("13900000001")).thenReturn(Result.success(user));
         when(passwordEncoder.matchPassword("wrong-password", "encoded-pass")).thenReturn(false);
 
         Result<LoginResponseModel> result = userAuthService.login(request);
 
         assertFalse(result.isSuccess());
-        assertEquals("用户名或密码错误", result.getMessage());
+        assertEquals("手机号或密码错误", result.getMessage());
     }
 
     @Test
     void loginShouldFailWhenUserIsDisabled() {
         LoginRequestModel request = new LoginRequestModel();
-        request.setUsername("alice");
+        request.setUsername("13900000001");
         request.setPassword("Pass@123456");
 
-        UserDomain user = buildUser("user-1", "alice", "encoded-pass", 0, "default");
-        when(userManager.findByUsername("alice")).thenReturn(Result.success(user));
+        UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 0, null);
+        when(userManager.findByUsername("13900000001")).thenReturn(Result.success(user));
 
         Result<LoginResponseModel> result = userAuthService.login(request);
 
@@ -111,13 +114,16 @@ class UserAuthServiceImplTest {
     }
 
     @Test
-    void registerShouldCreateUserWithEmailAsAccountAndDefaultPassword() {
+    void registerShouldCreateUserWithPhonePasswordAndVerifyCode() {
         RegisterRequestModel request = new RegisterRequestModel();
-        request.setEmail("new-user@example.com");
         request.setPhone("13900000002");
+        request.setPassword("Pass@123456");
+        request.setConfirmPassword("Pass@123456");
+        request.setVerifyCode("123456");
         request.setNickname("newbie");
 
-        when(userManager.findByUsername("new-user@example.com")).thenReturn(Result.failure("not found"));
+        when(cacheManager.get(RedisKeyUtil.verifyCodeKey("13900000002"), String.class)).thenReturn("123456");
+        when(userManager.findByUsername("13900000002")).thenReturn(Result.failure("not found"));
         when(passwordEncoder.encodePassword("Pass@123456")).thenReturn("encoded-pass");
         when(userManager.createUser(any(UserDomain.class))).thenReturn(Result.success(true));
 
@@ -125,8 +131,9 @@ class UserAuthServiceImplTest {
 
         assertTrue(result.isSuccess());
         assertNotNull(result.getResult());
-        assertEquals("new-user@example.com", result.getResult().getUsername());
-        assertEquals("new-user@example.com", result.getResult().getEmail());
+        assertEquals("13900000002", result.getResult().getUsername());
+        assertEquals("13900000002", result.getResult().getPhone());
+        assertEquals("newbie", result.getResult().getNickname());
         assertNull(result.getResult().getTenantId());
         assertEquals(java.util.List.of("USER"), result.getResult().getRoleCodes());
         assertEquals(1, result.getResult().getStatus());
@@ -134,44 +141,103 @@ class UserAuthServiceImplTest {
         ArgumentCaptor<UserDomain> captor = ArgumentCaptor.forClass(UserDomain.class);
         verify(userManager).createUser(captor.capture());
         UserDomain created = captor.getValue();
-        assertEquals("new-user@example.com", created.getUsername());
-        assertEquals("new-user@example.com", created.getEmail());
+        assertEquals("13900000002", created.getUsername());
+        assertEquals("13900000002", created.getPhone());
+        assertEquals("newbie", created.getNickname());
         assertEquals("encoded-pass", created.getPassword());
-        assertEquals("default", created.getTenantId());
         assertEquals(1, created.getStatus());
-        assertNotNull(created.getPhone());
-        assertEquals(11, created.getPhone().length());
-        assertTrue(created.getPhone().chars().allMatch(Character::isDigit));
         assertEquals(created.getPhone(), result.getResult().getPhone());
         assertNotNull(created.getUserId());
         assertFalse(created.getUserId().isBlank());
         assertNotNull(created.getSalt());
         assertFalse(created.getSalt().isBlank());
+        verify(cacheManager).delete(RedisKeyUtil.verifyCodeKey("13900000002"));
     }
 
     @Test
-    void registerShouldFailWhenEmailIsMissing() {
+    void registerShouldFailWhenPhoneIsInvalid() {
         RegisterRequestModel request = new RegisterRequestModel();
+        request.setPhone("123");
+        request.setPassword("Pass@123456");
+        request.setConfirmPassword("Pass@123456");
+        request.setVerifyCode("123456");
 
         Result<UserAuthModel> result = userAuthService.register(request);
 
         assertFalse(result.isSuccess());
-        assertEquals("邮箱不能为空", result.getMessage());
+        assertEquals("手机号格式不正确", result.getMessage());
+    }
+
+    @Test
+    void registerShouldFailWhenPasswordsDoNotMatch() {
+        RegisterRequestModel request = new RegisterRequestModel();
+        request.setPhone("13900000002");
+        request.setPassword("Pass@123456");
+        request.setConfirmPassword("Pass@654321");
+        request.setVerifyCode("123456");
+
+        Result<UserAuthModel> result = userAuthService.register(request);
+
+        assertFalse(result.isSuccess());
+        assertEquals("两次输入的密码不一致", result.getMessage());
     }
 
     @Test
     void registerShouldFailWhenUserAlreadyExists() {
         RegisterRequestModel request = new RegisterRequestModel();
-        request.setEmail("existing-user@example.com");
-        request.setTenantId("tenant-a");
+        request.setPhone("13900000002");
+        request.setPassword("Pass@123456");
+        request.setConfirmPassword("Pass@123456");
+        request.setVerifyCode("123456");
 
-        UserDomain existing = buildUser("user-2", "existing-user@example.com", "encoded-pass", 1, "tenant-a");
-        when(userManager.findByUsername("existing-user@example.com")).thenReturn(Result.success(existing));
+        UserDomain existing = buildUser("user-2", "13900000002", "encoded-pass", 1, null);
+        when(cacheManager.get(RedisKeyUtil.verifyCodeKey("13900000002"), String.class)).thenReturn("123456");
+        when(userManager.findByUsername("13900000002")).thenReturn(Result.success(existing));
 
         Result<UserAuthModel> result = userAuthService.register(request);
 
         assertFalse(result.isSuccess());
         assertEquals("用户已存在", result.getMessage());
+    }
+
+    @Test
+    void sendRegisterVerifyCodeShouldReturnSixDigitsAndCacheForSixtySeconds() {
+        RegisterRequestModel request = new RegisterRequestModel();
+        request.setPhone("13900000003");
+        request.setPassword("Pass@123456");
+        request.setConfirmPassword("Pass@123456");
+
+        when(userManager.findByUsername("13900000003")).thenReturn(Result.success(null));
+        when(cacheManager.zRangeByScore(eq(RedisKeyUtil.registerVerifySendKey("13900000003")), anyDouble(), anyDouble(), eq(String.class)))
+                .thenReturn(Set.of());
+
+        Result<String> result = userAuthService.sendRegisterVerifyCode(request);
+
+        assertTrue(result.isSuccess());
+        assertNotNull(result.getResult());
+        assertTrue(result.getResult().matches("\\d{6}"));
+        verify(cacheManager).zAdd(eq(RedisKeyUtil.registerVerifySendKey("13900000003")), any(), anyDouble());
+        verify(cacheManager).expire(RedisKeyUtil.registerVerifySendKey("13900000003"), 86400L);
+        verify(cacheManager).set(RedisKeyUtil.verifyCodeKey("13900000003"), result.getResult(), 60L);
+    }
+
+    @Test
+    void sendRegisterVerifyCodeShouldRejectHourlyLimit() {
+        RegisterRequestModel request = new RegisterRequestModel();
+        request.setPhone("13900000003");
+        request.setPassword("Pass@123456");
+        request.setConfirmPassword("Pass@123456");
+
+        when(userManager.findByUsername("13900000003")).thenReturn(Result.success(null));
+        when(cacheManager.zRangeByScore(eq(RedisKeyUtil.registerVerifySendKey("13900000003")), anyDouble(), anyDouble(), eq(String.class)))
+                .thenReturn(Set.of())
+                .thenReturn(Set.of("a", "b", "c"));
+
+        Result<String> result = userAuthService.sendRegisterVerifyCode(request);
+
+        assertFalse(result.isSuccess());
+        assertEquals("同一手机号1小时最多发送3次验证码", result.getMessage());
+        verify(cacheManager, never()).set(eq(RedisKeyUtil.verifyCodeKey("13900000003")), any(), eq(60L));
     }
 
     @Test
@@ -192,7 +258,8 @@ class UserAuthServiceImplTest {
     void validateTokenShouldAllowWhitelistedUsernameToBypassLatestTokenCheck() {
         ReflectionTestUtils.setField(userAuthService, "tokenUserWhitelistCsv", "kipmu@kip.xyz,admin@example.com");
 
-        UserDomain user = buildUser("user-2", "kipmu@kip.xyz", "encoded-pass", 1, "default");
+        UserDomain user = buildUser("user-2", "13900000009", "encoded-pass", 1, null);
+        user.setPhone("13900000009");
         when(jwtUtil.validateToken("jwt-token")).thenReturn(true);
         when(jwtUtil.getUserIdFromToken("jwt-token")).thenReturn("user-2");
         when(jwtUtil.getUsernameFromToken("jwt-token")).thenReturn("kipmu@kip.xyz");
@@ -202,7 +269,7 @@ class UserAuthServiceImplTest {
 
         assertTrue(result.isSuccess());
         assertNotNull(result.getResult());
-        assertEquals("kipmu@kip.xyz", result.getResult().getUsername());
+        assertEquals("13900000009", result.getResult().getUsername());
         verify(cacheManager, never()).get(RedisKeyUtil.userTokenKey("user-2"), String.class);
     }
 

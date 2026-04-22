@@ -4,8 +4,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import xyz.kip.auth.dal.entity.UserEntity;
 
-import java.util.List;
-
 /**
  * 用户数据访问接口.
  *
@@ -23,18 +21,9 @@ public interface UserMapper {
     UserEntity selectByUserId(@Param("userId") String userId);
 
     /**
-     * 根据手机号和租户ID查询用户.
+     * 根据手机号查询 C 端用户.
      *
-     * @param phone    手机号
-     * @param tenantId 租户ID
-     * @return 用户实体
-     */
-    UserEntity selectByPhoneAndTenant(@Param("phone") String phone, @Param("tenantId") String tenantId);
-
-    /**
-     * 根据用户名或邮箱查询 C 端用户.
-     *
-     * @param username 用户名
+     * @param username 手机号
      * @return 用户实体
      */
     UserEntity selectByUsername(@Param("username") String username);
@@ -85,19 +74,4 @@ public interface UserMapper {
      */
     int deleteByUserId(@Param("userId") String userId);
 
-    /**
-     * 根据租户ID查询用户列表.
-     *
-     * @param tenantId 租户ID
-     * @return 用户列表
-     */
-    List<UserEntity> selectByTenantId(@Param("tenantId") String tenantId);
-
-    /**
-     * 统计租户下的用户数量.
-     *
-     * @param tenantId 租户ID
-     * @return 用户数量
-     */
-    int countByTenantId(@Param("tenantId") String tenantId);
 }

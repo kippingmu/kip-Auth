@@ -12,6 +12,7 @@ public class UserDomain extends ToString {
     private String username;
     private String phone;
     private String email;
+    private String nickname;
     private String password;
     private String salt;
     private Integer status;
@@ -48,6 +49,14 @@ public class UserDomain extends ToString {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public String getPassword() {

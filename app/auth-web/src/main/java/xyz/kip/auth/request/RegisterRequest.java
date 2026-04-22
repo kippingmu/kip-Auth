@@ -9,11 +9,6 @@ import xyz.kip.open.common.base.ToString;
  */
 public class RegisterRequest extends ToString {
     /**
-     * 用户名
-     */
-    private String username;
-
-    /**
      * 密码
      */
     private String password;
@@ -22,11 +17,6 @@ public class RegisterRequest extends ToString {
      * 确认密码
      */
     private String confirmPassword;
-
-    /**
-     * 邮箱
-     */
-    private String email;
 
     /**
      * 手机号
@@ -43,19 +33,6 @@ public class RegisterRequest extends ToString {
      */
     private String verifyCode;
 
-    /**
-     * 租户ID
-     */
-    private String tenantId;
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getPassword() {
         return password;
     }
@@ -70,14 +47,6 @@ public class RegisterRequest extends ToString {
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPhone() {
@@ -104,12 +73,4 @@ public class RegisterRequest extends ToString {
         this.verifyCode = verifyCode;
     }
 
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
 }
-

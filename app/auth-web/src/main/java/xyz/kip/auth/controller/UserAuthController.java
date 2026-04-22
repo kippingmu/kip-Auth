@@ -48,7 +48,7 @@ public class UserAuthController {
                     return Result.failure("请求体不能为空");
                 }
                 if (isBlank(request.getUsername())) {
-                    return Result.failure("用户名不能为空");
+                    return Result.failure("手机号不能为空");
                 }
                 if (isBlank(request.getPassword())) {
                     return Result.failure("密码不能为空");
@@ -75,8 +75,17 @@ public class UserAuthController {
                 if (request == null) {
                     return Result.failure("请求体不能为空");
                 }
-                if (isBlank(request.getEmail())) {
-                    return Result.failure("邮箱不能为空");
+                if (isBlank(request.getPhone())) {
+                    return Result.failure("手机号不能为空");
+                }
+                if (isBlank(request.getPassword())) {
+                    return Result.failure("密码不能为空");
+                }
+                if (isBlank(request.getConfirmPassword())) {
+                    return Result.failure("确认密码不能为空");
+                }
+                if (isBlank(request.getVerifyCode())) {
+                    return Result.failure("验证码不能为空");
                 }
                 return null;
             }
@@ -88,6 +97,33 @@ public class UserAuthController {
                     return Result.failure(result.getMessage());
                 }
                 return Result.success(toUserAuthRequest(result.getResult()));
+            }
+        }.handle(req);
+    }
+
+    @PostMapping("/register/verify-code")
+    public Result<String> sendRegisterVerifyCode(@RequestBody RegisterRequest req) {
+        return new AbstractApiTemplate<RegisterRequest, String>() {
+            @Override
+            protected Result<Void> doValidate(RegisterRequest request) {
+                if (request == null) {
+                    return Result.failure("请求体不能为空");
+                }
+                if (isBlank(request.getPhone())) {
+                    return Result.failure("手机号不能为空");
+                }
+                if (isBlank(request.getPassword())) {
+                    return Result.failure("密码不能为空");
+                }
+                if (isBlank(request.getConfirmPassword())) {
+                    return Result.failure("确认密码不能为空");
+                }
+                return null;
+            }
+
+            @Override
+            protected Result<String> execute(RegisterRequest request) {
+                return userAuthService.sendRegisterVerifyCode(toRegisterModel(request));
             }
         }.handle(req);
     }
@@ -346,14 +382,11 @@ public class UserAuthController {
 
     private RegisterRequestModel toRegisterModel(RegisterRequest request) {
         RegisterRequestModel model = new RegisterRequestModel();
-        model.setUsername(request.getUsername());
         model.setPassword(request.getPassword());
         model.setConfirmPassword(request.getConfirmPassword());
-        model.setEmail(request.getEmail());
         model.setPhone(request.getPhone());
         model.setNickname(request.getNickname());
         model.setVerifyCode(request.getVerifyCode());
-        model.setTenantId(request.getTenantId());
         return model;
     }
 

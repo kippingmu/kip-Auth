@@ -58,14 +58,12 @@ public class UserManagerImpl implements UserManager {
     public Result<Boolean> createUser(UserDomain user) {
         UserEntity e = new UserEntity();
         e.setUserId(user.getUserId());
-        e.setUsername(user.getUsername());
         e.setPhone(user.getPhone());
-        e.setEmail(user.getEmail());
+        e.setNickname(user.getNickname());
         e.setPassword(user.getPassword());
         e.setSalt(user.getSalt());
         e.setStatus(user.getStatus());
         e.setRoleCode(firstRoleCode(user.getRoleCodes()));
-        e.setTenantId("default");
         e.setCreateBy("system");
         e.setUpdateBy("system");
         int rows = userMapper.insert(e);
@@ -81,9 +79,8 @@ public class UserManagerImpl implements UserManager {
     public Result<Boolean> updateUser(UserDomain user) {
         UserEntity e = new UserEntity();
         e.setUserId(user.getUserId());
-        e.setUsername(user.getUsername());
         e.setPhone(user.getPhone());
-        e.setEmail(user.getEmail());
+        e.setNickname(user.getNickname());
         e.setStatus(user.getStatus());
         e.setRoleCode(firstRoleCode(user.getRoleCodes()));
         e.setUpdateBy("system");
@@ -132,13 +129,12 @@ public class UserManagerImpl implements UserManager {
     private static UserDomain toDomain(UserEntity entity) {
         UserDomain d = new UserDomain();
         d.setUserId(entity.getUserId());
-        d.setUsername(entity.getUsername());
         d.setPhone(entity.getPhone());
-        d.setEmail(entity.getEmail());
+        d.setUsername(entity.getPhone());
+        d.setNickname(entity.getNickname());
         d.setPassword(entity.getPassword());
         d.setSalt(entity.getSalt());
         d.setStatus(entity.getStatus());
-        d.setTenantId(entity.getTenantId());
         d.setRoleCodes(roleCodes(entity.getRoleCode()));
         return d;
     }

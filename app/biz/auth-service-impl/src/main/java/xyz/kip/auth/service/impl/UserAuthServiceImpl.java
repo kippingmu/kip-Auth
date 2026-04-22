@@ -21,10 +21,14 @@ import xyz.kip.auth.manager.domain.UserDomain;
 import xyz.kip.auth.manager.cache.CacheManager;
 import xyz.kip.auth.manager.util.RedisKeyUtil;
 
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * 用户认证业务服务实现
@@ -34,6 +38,16 @@ import java.util.Map;
 @RefreshScope
 @Service
 public class UserAuthServiceImpl implements UserAuthService {
+
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
+    private static final Pattern VERIFY_CODE_PATTERN = Pattern.compile("^\\d{6}$");
+    private static final int MIN_PASSWORD_LENGTH = 8;
+    private static final int VERIFY_CODE_TTL_SECONDS = 60;
+    private static final int ONE_HOUR_SEND_LIMIT = 3;
+    private static final int ONE_DAY_SEND_LIMIT = 5;
+    private static final long ONE_HOUR_MILLIS = 60L * 60L * 1000L;
+    private static final long ONE_DAY_MILLIS = 24L * ONE_HOUR_MILLIS;
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Value("${auth.token.user-whitelist:}")
     private String tokenUserWhitelistCsv = "";
@@ -58,13 +72,17 @@ public class UserAuthServiceImpl implements UserAuthService {
     public Result<LoginResponseModel> login(LoginRequestModel loginRequest) {
         // 输入验证
         if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
-            return Result.failure("用户名和密码不能为空");
+            return Result.failure("手机号和密码不能为空");
+        }
+        String phone = normalizePhone(loginRequest.getUsername());
+        if (!isValidPhone(phone)) {
+            return Result.failure("手机号格式不正确");
         }
 
-        // C 端用户按账号/邮箱直接查询，不再按租户隔离。
-        Result<UserDomain> dbRes = userManager.findByUsername(loginRequest.getUsername());
+        // C 端用户只按手机号登录，登录方式仍然是密码登录。
+        Result<UserDomain> dbRes = userManager.findByUsername(phone);
         if (!dbRes.isSuccess() || dbRes.getResult() == null) {
-            return Result.failure("用户名或密码错误");
+            return Result.failure("手机号或密码错误");
         }
         UserAuthModel user = toModel(dbRes.getResult());
 
@@ -75,7 +93,7 @@ public class UserAuthServiceImpl implements UserAuthService {
 
         // 验证密码
         if (!passwordEncoder.matchPassword(loginRequest.getPassword(), user.getPassword())) {
-            return Result.failure("用户名或密码错误");
+            return Result.failure("手机号或密码错误");
         }
 
         // 生成JWT token
@@ -119,72 +137,148 @@ public class UserAuthServiceImpl implements UserAuthService {
      */
     @Override
     public Result<UserAuthModel> register(RegisterRequestModel registerRequest) {
-        if (registerRequest == null || registerRequest.getEmail() == null || registerRequest.getEmail().isBlank()) {
-            return Result.failure("邮箱不能为空");
+        Result<String> validation = validateRegisterRequest(registerRequest, true);
+        if (!validation.isSuccess()) {
+            return Result.failure(validation.getMessage());
         }
 
-        String account = registerRequest.getEmail().trim();
-        Result<UserDomain> exists = userManager.findByUsername(account);
+        String phone = normalizePhone(registerRequest.getPhone());
+        String verifyCode = normalize(registerRequest.getVerifyCode());
+        String cachedCode = cacheManager.get(RedisKeyUtil.verifyCodeKey(phone), String.class);
+        if (!verifyCode.equals(cachedCode)) {
+            return Result.failure("验证码错误或已过期");
+        }
+
+        Result<UserDomain> exists = userManager.findByUsername(phone);
         if (exists.isSuccess() && exists.getResult() != null) {
             return Result.failure("用户已存在");
         }
 
         String userId = SnowFlakeUtil.nextSegmentId();
-        String generatedPhone = buildRegistrationPhone(registerRequest.getPhone(), userId);
-        String encoded = passwordEncoder.encodePassword("Pass@123456");
-        String salt = java.util.UUID.randomUUID().toString().replace("-", "");
+        String encoded = passwordEncoder.encodePassword(registerRequest.getPassword());
+        String salt = UUID.randomUUID().toString().replace("-", "");
         UserDomain d = new UserDomain();
         d.setUserId(userId);
-        d.setUsername(account);
-        d.setPhone(generatedPhone);
-        d.setEmail(account);
+        d.setUsername(phone);
+        d.setPhone(phone);
+        d.setNickname(normalize(registerRequest.getNickname()));
         d.setPassword(encoded);
         d.setSalt(salt);
         d.setStatus(1);
         d.setRoleCodes(List.of("USER"));
-        d.setTenantId("default");
         Result<Boolean> created = userManager.createUser(d);
         if (!created.isSuccess() || !Boolean.TRUE.equals(created.getResult())) {
             return Result.failure(created.getMessage() != null ? created.getMessage() : "创建用户失败");
         }
+        cacheManager.delete(RedisKeyUtil.verifyCodeKey(phone));
 
         UserAuthModel result = new UserAuthModel();
         result.setUserId(userId);
-        result.setUsername(account);
-        result.setEmail(account);
-        result.setPhone(generatedPhone);
-        result.setNickname(registerRequest.getNickname());
+        result.setUsername(phone);
+        result.setPhone(phone);
+        result.setNickname(normalize(registerRequest.getNickname()));
         result.setStatus(1);
         result.setRoleCodes(List.of("USER"));
         return Result.success(result);
     }
 
-    private static String buildRegistrationPhone(String requestPhone, String userId) {
-        if (requestPhone == null || requestPhone.isBlank()) {
-            String digits = userId == null ? "" : userId.chars()
-                    .filter(Character::isDigit)
-                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                    .toString();
-            if (digits.length() >= 11) {
-                return digits.substring(digits.length() - 11);
-            }
-            long hashBase = userId == null ? 0L : Math.abs((long) userId.hashCode()) % 10_000_000_000L;
-            return String.format("1%010d", hashBase);
+    @Override
+    public Result<String> sendRegisterVerifyCode(RegisterRequestModel registerRequest) {
+        Result<String> validation = validateRegisterRequest(registerRequest, false);
+        if (!validation.isSuccess()) {
+            return validation;
         }
-        return requestPhone.trim();
+
+        String phone = normalizePhone(registerRequest.getPhone());
+        Result<UserDomain> exists = userManager.findByUsername(phone);
+        if (exists.isSuccess() && exists.getResult() != null) {
+            return Result.failure("用户已存在");
+        }
+
+        Result<Void> limitResult = checkAndRecordVerifySend(phone);
+        if (!limitResult.isSuccess()) {
+            return Result.failure(limitResult.getMessage());
+        }
+
+        String code = String.format("%06d", RANDOM.nextInt(1_000_000));
+        cacheManager.set(RedisKeyUtil.verifyCodeKey(phone), code, VERIFY_CODE_TTL_SECONDS);
+        return Result.success(code);
     }
 
     private static UserAuthModel toModel(UserDomain d) {
         UserAuthModel m = new UserAuthModel();
         m.setUserId(d.getUserId());
-        m.setUsername(d.getUsername());
+        m.setUsername(d.getPhone());
         m.setPhone(d.getPhone());
         m.setEmail(d.getEmail());
+        m.setNickname(d.getNickname());
         m.setPassword(d.getPassword());
         m.setStatus(d.getStatus());
         m.setTenantId(d.getTenantId());
         m.setRoleCodes(d.getRoleCodes());
         return m;
+    }
+
+    private Result<Void> checkAndRecordVerifySend(String phone) {
+        String key = RedisKeyUtil.registerVerifySendKey(phone);
+        long now = System.currentTimeMillis();
+        removeHistoryBefore(key, now - ONE_DAY_MILLIS);
+
+        int hourCount = cacheManager.zRangeByScore(key, now - ONE_HOUR_MILLIS, now, String.class).size();
+        if (hourCount >= ONE_HOUR_SEND_LIMIT) {
+            return Result.failure("同一手机号1小时最多发送3次验证码");
+        }
+        int dayCount = cacheManager.zRangeByScore(key, now - ONE_DAY_MILLIS, now, String.class).size();
+        if (dayCount >= ONE_DAY_SEND_LIMIT) {
+            return Result.failure("同一手机号1天最多发送5次验证码");
+        }
+
+        cacheManager.zAdd(key, now + ":" + UUID.randomUUID(), now);
+        cacheManager.expire(key, ONE_DAY_MILLIS / 1000L);
+        return Result.success(null);
+    }
+
+    private void removeHistoryBefore(String key, long cutoffMillis) {
+        Set<String> expired = cacheManager.zRangeByScore(key, 0, cutoffMillis, String.class);
+        if (!expired.isEmpty()) {
+            cacheManager.zRemove(key, expired.toArray());
+        }
+    }
+
+    private Result<String> validateRegisterRequest(RegisterRequestModel request, boolean requireVerifyCode) {
+        if (request == null) {
+            return Result.failure("请求体不能为空");
+        }
+        String phone = normalizePhone(request.getPhone());
+        if (!isValidPhone(phone)) {
+            return Result.failure("手机号格式不正确");
+        }
+        String password = request.getPassword();
+        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
+            return Result.failure("密码至少8位");
+        }
+        if (!password.equals(request.getConfirmPassword())) {
+            return Result.failure("两次输入的密码不一致");
+        }
+        if (requireVerifyCode) {
+            String verifyCode = normalize(request.getVerifyCode());
+            if (!VERIFY_CODE_PATTERN.matcher(verifyCode).matches()) {
+                return Result.failure("验证码必须是6位数字");
+            }
+        }
+        return Result.success(phone);
+    }
+
+    private static boolean isValidPhone(String phone) {
+        return phone != null && PHONE_PATTERN.matcher(phone).matches();
+    }
+
+    private static String normalizePhone(String phone) {
+        return normalize(phone);
+    }
+
+    private static String normalize(String value) {
+        return value == null ? "" : value.trim();
     }
 
     /**
@@ -358,15 +452,18 @@ public class UserAuthServiceImpl implements UserAuthService {
         if (userAuth == null || userAuth.getUserId() == null) {
             return Result.failure("参数不能为空");
         }
+        String phone = normalizePhone(userAuth.getPhone());
+        if (!isValidPhone(phone)) {
+            return Result.failure("手机号格式不正确");
+        }
         Result<UserAuthModel> qr = queryByUserId(userAuth.getUserId());
         if (!qr.isSuccess() || qr.getResult() == null) {
             return Result.failure("用户不存在");
         }
         UserDomain d = new UserDomain();
         d.setUserId(userAuth.getUserId());
-        d.setUsername(userAuth.getUsername());
-        d.setEmail(userAuth.getEmail());
-        d.setPhone(userAuth.getPhone());
+        d.setPhone(phone);
+        d.setNickname(userAuth.getNickname());
         d.setStatus(userAuth.getStatus());
         Result<Boolean> updated = userManager.updateUser(d);
         if (!updated.isSuccess() || !Boolean.TRUE.equals(updated.getResult())) {

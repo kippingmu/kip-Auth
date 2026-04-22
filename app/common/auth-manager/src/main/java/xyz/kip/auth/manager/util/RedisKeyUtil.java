@@ -91,6 +91,17 @@ public class RedisKeyUtil {
     }
 
     /**
+     * Generate registration verification send history key.
+     * Format: "kip:auth:verify:send:register:{phone}"
+     *
+     * @param phone phone number
+     * @return registration verification send history key
+     */
+    public static String registerVerifySendKey(String phone) {
+        return buildKey("verify", "send", "register", phone);
+    }
+
+    /**
      * Generate rate limit key.
      * Format: "kip:auth:rate:limit:{identifier}"
      *

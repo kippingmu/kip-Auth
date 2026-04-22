@@ -28,6 +28,13 @@ public interface UserAuthService {
     Result<UserAuthModel> register(RegisterRequestModel registerRequest);
 
     /**
+     * 发送注册验证码
+     * @param registerRequest 注册验证码请求
+     * @return 6位验证码
+     */
+    Result<String> sendRegisterVerifyCode(RegisterRequestModel registerRequest);
+
+    /**
      * 通过用户名查询用户
      * @param username 用户名
      * @return 用户信息
