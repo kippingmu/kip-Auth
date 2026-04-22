@@ -19,14 +19,19 @@ public class UserEntity {
     private String userId;
 
     /**
+     * 兼容字段：C端新用户默认写入手机号。
+     */
+    private String username;
+
+    /**
      * 手机号
      */
     private String phone;
 
     /**
-     * 昵称
+     * 邮箱
      */
-    private String nickname;
+    private String email;
 
     /**
      * 加密后的密码
@@ -47,6 +52,11 @@ public class UserEntity {
      * C 端用户角色编码：USER-普通用户，ADMIN-管理员
      */
     private String roleCode;
+
+    /**
+     * 兼容旧数据，C端业务不再按租户隔离。
+     */
+    private String tenantId;
 
     /**
      * 创建时间
@@ -84,6 +94,14 @@ public class UserEntity {
         this.userId = userId;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getPhone() {
         return phone;
     }
@@ -92,12 +110,12 @@ public class UserEntity {
         this.phone = phone;
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getEmail() {
+        return email;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -130,6 +148,14 @@ public class UserEntity {
 
     public void setRoleCode(String roleCode) {
         this.roleCode = roleCode;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 
     public LocalDateTime getCreateTime() {

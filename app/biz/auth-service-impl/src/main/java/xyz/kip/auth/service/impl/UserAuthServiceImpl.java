@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 public class UserAuthServiceImpl implements UserAuthService {
 
     private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern VERIFY_CODE_PATTERN = Pattern.compile("^\\d{6}$");
     private static final int MIN_PASSWORD_LENGTH = 8;
     private static final int VERIFY_CODE_TTL_SECONDS = 60;
@@ -72,17 +73,17 @@ public class UserAuthServiceImpl implements UserAuthService {
     public Result<LoginResponseModel> login(LoginRequestModel loginRequest) {
         // 输入验证
         if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
-            return Result.failure("手机号和密码不能为空");
+            return Result.failure("手机号/邮箱和密码不能为空");
         }
-        String phone = normalizePhone(loginRequest.getUsername());
-        if (!isValidPhone(phone)) {
-            return Result.failure("手机号格式不正确");
+        String account = normalizeAccount(loginRequest.getUsername());
+        if (!isValidLoginAccount(account)) {
+            return Result.failure("手机号或邮箱格式不正确");
         }
 
-        // C 端用户只按手机号登录，登录方式仍然是密码登录。
-        Result<UserDomain> dbRes = userManager.findByUsername(phone);
+        // C 端用户支持手机号或邮箱作为账号，登录方式仍然是密码登录。
+        Result<UserDomain> dbRes = userManager.findByUsername(account);
         if (!dbRes.isSuccess() || dbRes.getResult() == null) {
-            return Result.failure("手机号或密码错误");
+            return Result.failure("手机号/邮箱或密码错误");
         }
         UserAuthModel user = toModel(dbRes.getResult());
 
@@ -93,7 +94,7 @@ public class UserAuthServiceImpl implements UserAuthService {
 
         // 验证密码
         if (!passwordEncoder.matchPassword(loginRequest.getPassword(), user.getPassword())) {
-            return Result.failure("手机号或密码错误");
+            return Result.failure("手机号/邮箱或密码错误");
         }
 
         // 生成JWT token
@@ -273,8 +274,20 @@ public class UserAuthServiceImpl implements UserAuthService {
         return phone != null && PHONE_PATTERN.matcher(phone).matches();
     }
 
+    private static boolean isValidEmail(String email) {
+        return email != null && EMAIL_PATTERN.matcher(email).matches();
+    }
+
+    private static boolean isValidLoginAccount(String account) {
+        return isValidPhone(account) || isValidEmail(account);
+    }
+
     private static String normalizePhone(String phone) {
         return normalize(phone);
+    }
+
+    private static String normalizeAccount(String account) {
+        return normalize(account);
     }
 
     private static String normalize(String value) {

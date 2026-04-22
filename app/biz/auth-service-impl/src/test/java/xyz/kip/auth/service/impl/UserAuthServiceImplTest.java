@@ -95,7 +95,31 @@ class UserAuthServiceImplTest {
         Result<LoginResponseModel> result = userAuthService.login(request);
 
         assertFalse(result.isSuccess());
-        assertEquals("手机号或密码错误", result.getMessage());
+        assertEquals("手机号/邮箱或密码错误", result.getMessage());
+    }
+
+    @Test
+    void loginShouldAllowEmailAccount() {
+        LoginRequestModel request = new LoginRequestModel();
+        request.setUsername("alice@example.com");
+        request.setPassword("Pass@123456");
+
+        UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 1, "default");
+        user.setPhone("13900000001");
+        user.setEmail("alice@example.com");
+
+        when(userManager.findByUsername("alice@example.com")).thenReturn(Result.success(user));
+        when(passwordEncoder.matchPassword("Pass@123456", "encoded-pass")).thenReturn(true);
+        when(jwtUtil.generateToken(eq("user-1"), eq("13900000001"), any())).thenReturn("jwt-token");
+        when(jwtUtil.getExpiresIn()).thenReturn(3600L);
+
+        Result<LoginResponseModel> result = userAuthService.login(request);
+
+        assertTrue(result.isSuccess());
+        assertNotNull(result.getResult());
+        assertEquals("jwt-token", result.getResult().getToken());
+        assertEquals("alice@example.com", result.getResult().getEmail());
+        verify(userManager).findByUsername("alice@example.com");
     }
 
     @Test
