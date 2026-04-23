@@ -5,6 +5,7 @@ import xyz.kip.auth.dal.entity.UserEntity;
 import xyz.kip.auth.dal.mapper.UserMapper;
 import xyz.kip.auth.manager.UserManager;
 import xyz.kip.auth.manager.domain.UserDomain;
+import xyz.kip.auth.manager.enums.RoleCodeEnum;
 import xyz.kip.open.common.base.Result;
 
 import java.util.List;
@@ -154,15 +155,15 @@ public class UserManagerImpl implements UserManager {
 
     private static String firstRoleCode(List<String> roleCodes) {
         if (roleCodes == null || roleCodes.isEmpty() || roleCodes.get(0) == null || roleCodes.get(0).isBlank()) {
-            return "USER";
+            return RoleCodeEnum.USER.getCode();
         }
-        return roleCodes.get(0).trim().toUpperCase();
+        return RoleCodeEnum.codeOf(roleCodes.get(0));
     }
 
     private static List<String> roleCodes(String roleCode) {
         if (roleCode == null || roleCode.isBlank()) {
-            return List.of("USER");
+            return List.of(RoleCodeEnum.USER.getCode());
         }
-        return List.of(roleCode.trim().toUpperCase());
+        return List.of(RoleCodeEnum.codeOf(roleCode));
     }
 }
