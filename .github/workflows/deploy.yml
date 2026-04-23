@@ -31,6 +31,7 @@ jobs:
     env:
       DOCKER_BUILDKIT: "1"
       BUILDKIT_PROGRESS: plain
+      DOCKER_CONFIG: ${{ runner.temp }}/kip-auth-docker-${{ github.run_id }}
       IMAGE_REPO: registry.cn-hangzhou.aliyuncs.com/kip-app/kip-auth
       KUBECONFIG_PATH: /etc/kubernetes/admin.conf
       KUBE_NAMESPACE: kip-poc
@@ -75,6 +76,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p "${DOCKER_CONFIG}"
           REGISTRY_USERNAME="${{ secrets.ALIYUN_REGISTRY_USERNAME }}"
           REGISTRY_PASSWORD="${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
 
@@ -166,3 +168,4 @@ jobs:
         run: |
           set -euo pipefail
           docker logout registry.cn-hangzhou.aliyuncs.com || true
+          rm -rf "${DOCKER_CONFIG}" || true
