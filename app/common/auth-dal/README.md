@@ -20,9 +20,6 @@ auth-dal/
     │   ├── UserMapper.xml
     │   ├── BizInfoMapper.xml
     │   └── RoleMapper.xml
-    ├── sql/             # 数据库脚本
-    │   ├── schema.sql   # 表结构
-    │   └── data.sql     # 初始化数据
     ├── mybatis-config.xml
     └── application-dal.yml
 ```
@@ -55,11 +52,13 @@ auth-dal/
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS kip_auth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # 执行表结构脚本
-mysql -u root -p kip_auth < src/main/resources/sql/schema.sql
+mysql -u root -p kip_auth < /Users/xiaoshichuan/icodex/server-st/docs/sql/kip-auth/schema.sql
 
 # 执行初始化数据脚本
-mysql -u root -p kip_auth < src/main/resources/sql/data.sql
+mysql -u root -p kip_auth < /Users/xiaoshichuan/icodex/server-st/docs/sql/kip-auth/data.sql
 ```
+
+SQL 文档集中保存在 `/Users/xiaoshichuan/icodex/server-st/docs/sql/kip-auth/`，应用仓库内不再保留重复副本。
 
 ### 2. 配置数据源
 
