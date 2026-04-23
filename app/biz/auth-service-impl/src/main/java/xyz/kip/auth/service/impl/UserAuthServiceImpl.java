@@ -73,7 +73,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         String account = "EMAIL".equals(loginType) ? normalize(loginRequest.getEmail()) : normalize(loginRequest.getPhone());
         Result<UserDomain> dbRes = userManager.findByLoginAccount(loginType, account);
         if (!dbRes.isSuccess() || dbRes.getResult() == null) {
-            return Result.failure("手机号/邮箱或密码错误");
+            return Result.failure("手机号/邮箱未注册");
         }
         UserAuthModel user = toModel(dbRes.getResult());
 
