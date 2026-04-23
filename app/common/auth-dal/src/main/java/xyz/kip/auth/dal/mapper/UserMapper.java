@@ -29,6 +29,15 @@ public interface UserMapper {
     UserEntity selectByUsername(@Param("username") String username);
 
     /**
+     * 根据登录类型和账号查询 C 端用户.
+     *
+     * @param loginType 登录类型：PHONE/EMAIL
+     * @param account 手机号或邮箱
+     * @return 用户实体
+     */
+    UserEntity selectByLoginAccount(@Param("loginType") String loginType, @Param("account") String account);
+
+    /**
      * 插入用户.
      *
      * @param user 用户实体

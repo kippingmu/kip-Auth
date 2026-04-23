@@ -35,6 +35,15 @@ public class UserManagerImpl implements UserManager {
         return Result.success(toDomain(entity));
     }
 
+    @Override
+    public Result<UserDomain> findByLoginAccount(String loginType, String account) {
+        UserEntity entity = userMapper.selectByLoginAccount(loginType, account);
+        if (entity == null) {
+            return Result.success(null);
+        }
+        return Result.success(toDomain(entity));
+    }
+
     /**
      * 根据用户ID查询用户
      * @param userId 用户ID
@@ -65,7 +74,7 @@ public class UserManagerImpl implements UserManager {
         e.setSalt(user.getSalt());
         e.setStatus(user.getStatus());
         e.setRoleCode(firstRoleCode(user.getRoleCodes()));
-        e.setTenantId("default");
+        e.setTenantId("1");
         e.setCreateBy("system");
         e.setUpdateBy("system");
         int rows = userMapper.insert(e);

@@ -9,31 +9,47 @@ import xyz.kip.open.common.base.ToString;
  */
 public class LoginRequestRequest extends ToString {
     /**
-     * 用户名/手机号/邮箱
+     * 登录类型：PHONE-手机号，EMAIL-邮箱
      */
-    private String username;
+    private String loginType;
+
+    /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
+     * 邮箱
+     */
+    private String email;
 
     /**
      * 密码
      */
     private String password;
 
-    /**
-     * 验证码
-     */
-    private String verifyCode;
-
-    /**
-     * 租户ID
-     */
-    private String tenantId;
-
-    public String getUsername() {
-        return username;
+    public String getLoginType() {
+        return loginType;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setLoginType(String loginType) {
+        this.loginType = loginType;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -44,20 +60,4 @@ public class LoginRequestRequest extends ToString {
         this.password = password;
     }
 
-    public String getVerifyCode() {
-        return verifyCode;
-    }
-
-    public void setVerifyCode(String verifyCode) {
-        this.verifyCode = verifyCode;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
 }
-

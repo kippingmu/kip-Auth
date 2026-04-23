@@ -39,6 +39,23 @@
         LIMIT 1
     </select>
 
+    <select id="selectByLoginAccount" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM auth_user
+        <where>
+            <choose>
+                <when test="loginType == 'EMAIL'">
+                    email = #{account}
+                </when>
+                <otherwise>
+                    phone = #{account}
+                </otherwise>
+            </choose>
+        </where>
+        LIMIT 1
+    </select>
+
     <insert id="insert" parameterType="xyz.kip.auth.dal.entity.UserEntity">
         INSERT INTO auth_user (
             user_id, username, phone, email, password, salt, status, role_code, tenant_id,

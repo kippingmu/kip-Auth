@@ -50,14 +50,15 @@ class UserAuthServiceImplTest {
     @Test
     void loginShouldReturnTokenAndCacheUserInfo() {
         LoginRequestModel request = new LoginRequestModel();
-        request.setUsername("13900000001");
+        request.setLoginType("PHONE");
+        request.setPhone("13900000001");
         request.setPassword("Pass@123456");
 
         UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 1, null);
         user.setPhone("13900000001");
         user.setNickname("Alice");
 
-        when(userManager.findByUsername("13900000001")).thenReturn(Result.success(user));
+        when(userManager.findByLoginAccount("PHONE", "13900000001")).thenReturn(Result.success(user));
         when(passwordEncoder.matchPassword("Pass@123456", "encoded-pass")).thenReturn(true);
         when(jwtUtil.generateToken(eq("user-1"), eq("13900000001"), any())).thenReturn("jwt-token");
         when(jwtUtil.getExpiresIn()).thenReturn(3600L);
@@ -69,7 +70,7 @@ class UserAuthServiceImplTest {
         assertEquals("jwt-token", result.getResult().getToken());
         assertEquals("Bearer", result.getResult().getTokenType());
         assertEquals(3600L, result.getResult().getExpiresIn());
-        verify(userManager).findByUsername("13900000001");
+        verify(userManager).findByLoginAccount("PHONE", "13900000001");
         verify(cacheManager).set(RedisKeyUtil.userTokenKey("user-1"), "jwt-token", 3600L);
 
         ArgumentCaptor<Object> cachedUserCaptor = ArgumentCaptor.forClass(Object.class);
@@ -85,11 +86,12 @@ class UserAuthServiceImplTest {
     @Test
     void loginShouldFailWhenPasswordDoesNotMatch() {
         LoginRequestModel request = new LoginRequestModel();
-        request.setUsername("13900000001");
+        request.setLoginType("PHONE");
+        request.setPhone("13900000001");
         request.setPassword("wrong-password");
 
         UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 1, null);
-        when(userManager.findByUsername("13900000001")).thenReturn(Result.success(user));
+        when(userManager.findByLoginAccount("PHONE", "13900000001")).thenReturn(Result.success(user));
         when(passwordEncoder.matchPassword("wrong-password", "encoded-pass")).thenReturn(false);
 
         Result<LoginResponseModel> result = userAuthService.login(request);
@@ -101,14 +103,15 @@ class UserAuthServiceImplTest {
     @Test
     void loginShouldAllowEmailAccount() {
         LoginRequestModel request = new LoginRequestModel();
-        request.setUsername("alice@example.com");
+        request.setLoginType("EMAIL");
+        request.setEmail("alice@example.com");
         request.setPassword("Pass@123456");
 
-        UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 1, "default");
+        UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 1, "1");
         user.setPhone("13900000001");
         user.setEmail("alice@example.com");
 
-        when(userManager.findByUsername("alice@example.com")).thenReturn(Result.success(user));
+        when(userManager.findByLoginAccount("EMAIL", "alice@example.com")).thenReturn(Result.success(user));
         when(passwordEncoder.matchPassword("Pass@123456", "encoded-pass")).thenReturn(true);
         when(jwtUtil.generateToken(eq("user-1"), eq("13900000001"), any())).thenReturn("jwt-token");
         when(jwtUtil.getExpiresIn()).thenReturn(3600L);
@@ -119,17 +122,18 @@ class UserAuthServiceImplTest {
         assertNotNull(result.getResult());
         assertEquals("jwt-token", result.getResult().getToken());
         assertEquals("alice@example.com", result.getResult().getEmail());
-        verify(userManager).findByUsername("alice@example.com");
+        verify(userManager).findByLoginAccount("EMAIL", "alice@example.com");
     }
 
     @Test
     void loginShouldFailWhenUserIsDisabled() {
         LoginRequestModel request = new LoginRequestModel();
-        request.setUsername("13900000001");
+        request.setLoginType("PHONE");
+        request.setPhone("13900000001");
         request.setPassword("Pass@123456");
 
         UserDomain user = buildUser("user-1", "13900000001", "encoded-pass", 0, null);
-        when(userManager.findByUsername("13900000001")).thenReturn(Result.success(user));
+        when(userManager.findByLoginAccount("PHONE", "13900000001")).thenReturn(Result.success(user));
 
         Result<LoginResponseModel> result = userAuthService.login(request);
 
@@ -176,34 +180,6 @@ class UserAuthServiceImplTest {
         assertNotNull(created.getSalt());
         assertFalse(created.getSalt().isBlank());
         verify(cacheManager).delete(RedisKeyUtil.verifyCodeKey("13900000002"));
-    }
-
-    @Test
-    void registerShouldFailWhenPhoneIsInvalid() {
-        RegisterRequestModel request = new RegisterRequestModel();
-        request.setPhone("123");
-        request.setPassword("Pass@123456");
-        request.setConfirmPassword("Pass@123456");
-        request.setVerifyCode("123456");
-
-        Result<UserAuthModel> result = userAuthService.register(request);
-
-        assertFalse(result.isSuccess());
-        assertEquals("手机号格式不正确", result.getMessage());
-    }
-
-    @Test
-    void registerShouldFailWhenPasswordsDoNotMatch() {
-        RegisterRequestModel request = new RegisterRequestModel();
-        request.setPhone("13900000002");
-        request.setPassword("Pass@123456");
-        request.setConfirmPassword("Pass@654321");
-        request.setVerifyCode("123456");
-
-        Result<UserAuthModel> result = userAuthService.register(request);
-
-        assertFalse(result.isSuccess());
-        assertEquals("两次输入的密码不一致", result.getMessage());
     }
 
     @Test

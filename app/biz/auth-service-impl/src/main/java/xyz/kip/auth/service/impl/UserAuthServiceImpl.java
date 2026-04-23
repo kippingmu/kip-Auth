@@ -40,9 +40,6 @@ import java.util.regex.Pattern;
 public class UserAuthServiceImpl implements UserAuthService {
 
     private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
-    private static final Pattern VERIFY_CODE_PATTERN = Pattern.compile("^\\d{6}$");
-    private static final int MIN_PASSWORD_LENGTH = 8;
     private static final int VERIFY_CODE_TTL_SECONDS = 60;
     private static final int ONE_HOUR_SEND_LIMIT = 3;
     private static final int ONE_DAY_SEND_LIMIT = 5;
@@ -71,17 +68,10 @@ public class UserAuthServiceImpl implements UserAuthService {
      */
     @Override
     public Result<LoginResponseModel> login(LoginRequestModel loginRequest) {
-        // 输入验证
-        if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
-            return Result.failure("手机号/邮箱和密码不能为空");
-        }
-        String account = normalizeAccount(loginRequest.getUsername());
-        if (!isValidLoginAccount(account)) {
-            return Result.failure("手机号或邮箱格式不正确");
-        }
-
         // C 端用户支持手机号或邮箱作为账号，登录方式仍然是密码登录。
-        Result<UserDomain> dbRes = userManager.findByUsername(account);
+        String loginType = normalize(loginRequest.getLoginType()).toUpperCase();
+        String account = "EMAIL".equals(loginType) ? normalize(loginRequest.getEmail()) : normalize(loginRequest.getPhone());
+        Result<UserDomain> dbRes = userManager.findByLoginAccount(loginType, account);
         if (!dbRes.isSuccess() || dbRes.getResult() == null) {
             return Result.failure("手机号/邮箱或密码错误");
         }
@@ -138,11 +128,6 @@ public class UserAuthServiceImpl implements UserAuthService {
      */
     @Override
     public Result<UserAuthModel> register(RegisterRequestModel registerRequest) {
-        Result<String> validation = validateRegisterRequest(registerRequest, true);
-        if (!validation.isSuccess()) {
-            return Result.failure(validation.getMessage());
-        }
-
         String phone = normalizePhone(registerRequest.getPhone());
         String verifyCode = normalize(registerRequest.getVerifyCode());
         String cachedCode = cacheManager.get(RedisKeyUtil.verifyCodeKey(phone), String.class);
@@ -185,11 +170,6 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     @Override
     public Result<String> sendRegisterVerifyCode(RegisterRequestModel registerRequest) {
-        Result<String> validation = validateRegisterRequest(registerRequest, false);
-        if (!validation.isSuccess()) {
-            return validation;
-        }
-
         String phone = normalizePhone(registerRequest.getPhone());
         Result<UserDomain> exists = userManager.findByUsername(phone);
         if (exists.isSuccess() && exists.getResult() != null) {
@@ -246,48 +226,12 @@ public class UserAuthServiceImpl implements UserAuthService {
         }
     }
 
-    private Result<String> validateRegisterRequest(RegisterRequestModel request, boolean requireVerifyCode) {
-        if (request == null) {
-            return Result.failure("请求体不能为空");
-        }
-        String phone = normalizePhone(request.getPhone());
-        if (!isValidPhone(phone)) {
-            return Result.failure("手机号格式不正确");
-        }
-        String password = request.getPassword();
-        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
-            return Result.failure("密码至少8位");
-        }
-        if (!password.equals(request.getConfirmPassword())) {
-            return Result.failure("两次输入的密码不一致");
-        }
-        if (requireVerifyCode) {
-            String verifyCode = normalize(request.getVerifyCode());
-            if (!VERIFY_CODE_PATTERN.matcher(verifyCode).matches()) {
-                return Result.failure("验证码必须是6位数字");
-            }
-        }
-        return Result.success(phone);
-    }
-
     private static boolean isValidPhone(String phone) {
         return phone != null && PHONE_PATTERN.matcher(phone).matches();
     }
 
-    private static boolean isValidEmail(String email) {
-        return email != null && EMAIL_PATTERN.matcher(email).matches();
-    }
-
-    private static boolean isValidLoginAccount(String account) {
-        return isValidPhone(account) || isValidEmail(account);
-    }
-
     private static String normalizePhone(String phone) {
         return normalize(phone);
-    }
-
-    private static String normalizeAccount(String account) {
-        return normalize(account);
     }
 
     private static String normalize(String value) {
@@ -340,7 +284,7 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
 
     /**
-     * 通过用户名查询用户（DB 优先，默认租户 default）
+     * 通过用户名查询用户（DB 优先，兼容租户 1）
      */
     @Override
     public Result<UserAuthModel> queryByUsername(String username) {

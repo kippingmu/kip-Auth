@@ -14,6 +14,11 @@ public interface UserManager {
     Result<UserDomain> findByUsername(String username);
 
     /**
+     * Find C-end user by login type and account.
+     */
+    Result<UserDomain> findByLoginAccount(String loginType, String account);
+
+    /**
      * Find user by userId.
      */
     Result<UserDomain> findByUserId(String userId);

@@ -24,6 +24,8 @@ import xyz.kip.auth.service.model.UserAuthModel;
 import xyz.kip.open.common.base.AbstractApiTemplate;
 import xyz.kip.open.common.base.Result;
 
+import java.util.regex.Pattern;
+
 /**
  * 用户认证控制器
  *
@@ -35,6 +37,11 @@ import xyz.kip.open.common.base.Result;
 public class UserAuthController {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String LOGIN_TYPE_PHONE = "PHONE";
+    private static final String LOGIN_TYPE_EMAIL = "EMAIL";
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+    private static final Pattern VERIFY_CODE_PATTERN = Pattern.compile("^\\d{6}$");
 
     @Resource
     private UserAuthService userAuthService;
@@ -47,8 +54,28 @@ public class UserAuthController {
                 if (request == null) {
                     return Result.failure("请求体不能为空");
                 }
-                if (isBlank(request.getUsername())) {
-                    return Result.failure("手机号不能为空");
+                String loginType = normalizeLoginType(request.getLoginType());
+                if (isBlank(loginType)) {
+                    return Result.failure("登录类型不能为空");
+                }
+                if (!LOGIN_TYPE_PHONE.equals(loginType) && !LOGIN_TYPE_EMAIL.equals(loginType)) {
+                    return Result.failure("登录类型不正确");
+                }
+                if (LOGIN_TYPE_PHONE.equals(loginType)) {
+                    if (isBlank(request.getPhone())) {
+                        return Result.failure("手机号不能为空");
+                    }
+                    if (!isValidPhone(request.getPhone())) {
+                        return Result.failure("手机号格式不正确");
+                    }
+                }
+                if (LOGIN_TYPE_EMAIL.equals(loginType)) {
+                    if (isBlank(request.getEmail())) {
+                        return Result.failure("邮箱不能为空");
+                    }
+                    if (!isValidEmail(request.getEmail())) {
+                        return Result.failure("邮箱格式不正确");
+                    }
                 }
                 if (isBlank(request.getPassword())) {
                     return Result.failure("密码不能为空");
@@ -78,14 +105,26 @@ public class UserAuthController {
                 if (isBlank(request.getPhone())) {
                     return Result.failure("手机号不能为空");
                 }
+                if (!isValidPhone(request.getPhone())) {
+                    return Result.failure("手机号格式不正确");
+                }
                 if (isBlank(request.getPassword())) {
                     return Result.failure("密码不能为空");
+                }
+                if (request.getPassword().length() < 8) {
+                    return Result.failure("密码至少8位");
                 }
                 if (isBlank(request.getConfirmPassword())) {
                     return Result.failure("确认密码不能为空");
                 }
+                if (!request.getPassword().equals(request.getConfirmPassword())) {
+                    return Result.failure("两次输入的密码不一致");
+                }
                 if (isBlank(request.getVerifyCode())) {
                     return Result.failure("验证码不能为空");
+                }
+                if (!VERIFY_CODE_PATTERN.matcher(request.getVerifyCode().trim()).matches()) {
+                    return Result.failure("验证码必须是6位数字");
                 }
                 return null;
             }
@@ -112,11 +151,20 @@ public class UserAuthController {
                 if (isBlank(request.getPhone())) {
                     return Result.failure("手机号不能为空");
                 }
+                if (!isValidPhone(request.getPhone())) {
+                    return Result.failure("手机号格式不正确");
+                }
                 if (isBlank(request.getPassword())) {
                     return Result.failure("密码不能为空");
                 }
+                if (request.getPassword().length() < 8) {
+                    return Result.failure("密码至少8位");
+                }
                 if (isBlank(request.getConfirmPassword())) {
                     return Result.failure("确认密码不能为空");
+                }
+                if (!request.getPassword().equals(request.getConfirmPassword())) {
+                    return Result.failure("两次输入的密码不一致");
                 }
                 return null;
             }
@@ -359,10 +407,11 @@ public class UserAuthController {
 
     private LoginRequestModel toLoginModel(LoginRequestRequest request) {
         LoginRequestModel model = new LoginRequestModel();
-        model.setUsername(request.getUsername());
+        String loginType = normalizeLoginType(request.getLoginType());
+        model.setLoginType(loginType);
+        model.setPhone(trimToNull(request.getPhone()));
+        model.setEmail(trimToNull(request.getEmail()));
         model.setPassword(request.getPassword());
-        model.setVerifyCode(request.getVerifyCode());
-        model.setTenantId(request.getTenantId());
         return model;
     }
 
@@ -431,6 +480,26 @@ public class UserAuthController {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private boolean isValidPhone(String phone) {
+        return phone != null && PHONE_PATTERN.matcher(phone.trim()).matches();
+    }
+
+    private boolean isValidEmail(String email) {
+        return email != null && EMAIL_PATTERN.matcher(email.trim()).matches();
+    }
+
+    private String normalizeLoginType(String loginType) {
+        return loginType == null ? "" : loginType.trim().toUpperCase();
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private static final class ChangePasswordCommand {

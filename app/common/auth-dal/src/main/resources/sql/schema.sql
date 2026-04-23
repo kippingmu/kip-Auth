@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `auth_user` (
     `salt` VARCHAR(64) NOT NULL COMMENT '密码盐值',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
     `role_code` VARCHAR(32) NOT NULL DEFAULT 'USER' COMMENT 'C端用户角色：USER/ADMIN',
-    `tenant_id` VARCHAR(64) NOT NULL DEFAULT 'default' COMMENT '兼容旧数据，C端业务不再使用',
+    `tenant_id` VARCHAR(64) NOT NULL DEFAULT '1' COMMENT '兼容旧数据，C端业务不再使用',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `create_by` VARCHAR(64) COMMENT '创建人',
