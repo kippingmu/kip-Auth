@@ -17,6 +17,7 @@ import xyz.kip.auth.request.UserAuthRequest;
 import xyz.kip.auth.response.LoginResponse;
 import xyz.kip.auth.response.UserAuthResponse;
 import xyz.kip.auth.service.UserAuthService;
+import xyz.kip.auth.context.UserContext;
 import xyz.kip.auth.service.model.LoginRequestModel;
 import xyz.kip.auth.service.model.LoginResponseModel;
 import xyz.kip.auth.service.model.RegisterRequestModel;
@@ -37,6 +38,7 @@ import java.util.regex.Pattern;
 public class UserAuthController {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String ADMIN_ROLE = "ADMIN";
     private static final String LOGIN_TYPE_PHONE = "PHONE";
     private static final String LOGIN_TYPE_EMAIL = "EMAIL";
     private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
@@ -240,6 +242,10 @@ public class UserAuthController {
         return new AbstractApiTemplate<ResetPasswordCommand, Boolean>() {
             @Override
             protected Result<Void> doValidate(ResetPasswordCommand request) {
+                Result<Void> adminRoleValidation = validateAdminRole();
+                if (adminRoleValidation != null) {
+                    return adminRoleValidation;
+                }
                 if (isBlank(request.getUserId())) {
                     return Result.failure("userId不能为空");
                 }
@@ -261,6 +267,10 @@ public class UserAuthController {
         return new AbstractApiTemplate<String, Boolean>() {
             @Override
             protected Result<Void> doValidate(String request) {
+                Result<Void> adminRoleValidation = validateAdminRole();
+                if (adminRoleValidation != null) {
+                    return adminRoleValidation;
+                }
                 if (isBlank(request)) {
                     return Result.failure("userId不能为空");
                 }
@@ -279,6 +289,10 @@ public class UserAuthController {
         return new AbstractApiTemplate<String, Boolean>() {
             @Override
             protected Result<Void> doValidate(String request) {
+                Result<Void> adminRoleValidation = validateAdminRole();
+                if (adminRoleValidation != null) {
+                    return adminRoleValidation;
+                }
                 if (isBlank(request)) {
                     return Result.failure("userId不能为空");
                 }
@@ -297,6 +311,10 @@ public class UserAuthController {
         return new AbstractApiTemplate<String, Boolean>() {
             @Override
             protected Result<Void> doValidate(String request) {
+                Result<Void> adminRoleValidation = validateAdminRole();
+                if (adminRoleValidation != null) {
+                    return adminRoleValidation;
+                }
                 if (isBlank(request)) {
                     return Result.failure("userId不能为空");
                 }
@@ -315,6 +333,10 @@ public class UserAuthController {
         return new AbstractApiTemplate<String, UserAuthResponse>() {
             @Override
             protected Result<Void> doValidate(String request) {
+                Result<Void> adminRoleValidation = validateAdminRole();
+                if (adminRoleValidation != null) {
+                    return adminRoleValidation;
+                }
                 if (isBlank(request)) {
                     return Result.failure("userId不能为空");
                 }
@@ -337,6 +359,10 @@ public class UserAuthController {
         return new AbstractApiTemplate<String, UserAuthResponse>() {
             @Override
             protected Result<Void> doValidate(String request) {
+                Result<Void> adminRoleValidation = validateAdminRole();
+                if (adminRoleValidation != null) {
+                    return adminRoleValidation;
+                }
                 if (isBlank(request)) {
                     return Result.failure("username不能为空");
                 }
@@ -395,6 +421,20 @@ public class UserAuthController {
             return Result.failure("缺少authorization token");
         }
         return null;
+    }
+
+    private Result<Void> validateAdminRole() {
+        String userRoles = UserContext.getUserRoles();
+        if (isBlank(userRoles)) {
+            return Result.failure("ADMIN role is required");
+        }
+        String[] roles = userRoles.split(",");
+        for (String role : roles) {
+            if (ADMIN_ROLE.equalsIgnoreCase(role.trim())) {
+                return null;
+            }
+        }
+        return Result.failure("ADMIN role is required");
     }
 
     private String normalizeToken(String token) {
