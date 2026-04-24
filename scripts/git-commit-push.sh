@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-cd ../
+set -euo pipefail
 
-git add .
-
-git commit -m "codex update"
-
-git push
+exec bash /Users/xiaoshichuan/icodex/server-st/kip/scripts/repo/git-commit-push.sh kip-auth "$@"
