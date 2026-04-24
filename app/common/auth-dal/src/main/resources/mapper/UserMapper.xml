@@ -12,6 +12,9 @@
         <result column="salt" property="salt"/>
         <result column="status" property="status"/>
         <result column="role_code" property="roleCode"/>
+        <result column="birth_year" property="birthYear"/>
+        <result column="personal_feature" property="personalFeature"/>
+        <result column="occupation" property="occupation"/>
         <result column="tenant_id" property="tenantId"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
@@ -20,7 +23,8 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, user_id, username, phone, email, password, salt, status, role_code, tenant_id,
+        id, user_id, username, phone, email, password, salt, status, role_code,
+        birth_year, personal_feature, occupation, tenant_id,
         create_time, update_time, create_by, update_by
     </sql>
 
@@ -58,11 +62,14 @@
 
     <insert id="insert" parameterType="xyz.kip.auth.dal.entity.UserEntity">
         INSERT INTO auth_user (
-            user_id, username, phone, email, password, salt, status, role_code, tenant_id,
-            create_by, update_by
+            user_id, username, phone, email, password, salt, status, role_code,
+            birth_year, personal_feature, occupation, tenant_id, create_by, update_by
         ) VALUES (
             #{userId}, #{username}, #{phone}, #{email}, #{password}, #{salt},
-            #{status}, #{roleCode}, #{tenantId}, #{createBy}, #{updateBy}
+            #{status}, #{roleCode}, #{birthYear},
+            COALESCE(#{personalFeature}, '适度幽默'),
+            COALESCE(#{occupation}, '软件开发'),
+            #{tenantId}, #{createBy}, #{updateBy}
         )
     </insert>
 
@@ -74,6 +81,9 @@
             <if test="email != null">email = #{email},</if>
             <if test="status != null">status = #{status},</if>
             <if test="roleCode != null">role_code = #{roleCode},</if>
+            <if test="birthYear != null">birth_year = #{birthYear},</if>
+            <if test="personalFeature != null">personal_feature = #{personalFeature},</if>
+            <if test="occupation != null">occupation = #{occupation},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
         </set>
         WHERE user_id = #{userId}

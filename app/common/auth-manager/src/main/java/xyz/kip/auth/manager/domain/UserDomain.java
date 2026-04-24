@@ -16,6 +16,9 @@ public class UserDomain extends ToString {
     private String password;
     private String salt;
     private Integer status;
+    private Integer birthYear;
+    private String personalFeature;
+    private String occupation;
     private String tenantId;
     private List<String> roleCodes;
 
@@ -81,6 +84,30 @@ public class UserDomain extends ToString {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Integer getBirthYear() {
+        return birthYear;
+    }
+
+    public void setBirthYear(Integer birthYear) {
+        this.birthYear = birthYear;
+    }
+
+    public String getPersonalFeature() {
+        return personalFeature;
+    }
+
+    public void setPersonalFeature(String personalFeature) {
+        this.personalFeature = personalFeature;
+    }
+
+    public String getOccupation() {
+        return occupation;
+    }
+
+    public void setOccupation(String occupation) {
+        this.occupation = occupation;
     }
 
     public String getTenantId() {

@@ -45,6 +45,8 @@ public class UserAuthServiceImpl implements UserAuthService {
     private static final int ONE_DAY_SEND_LIMIT = 5;
     private static final long ONE_HOUR_MILLIS = 60L * 60L * 1000L;
     private static final long ONE_DAY_MILLIS = 24L * ONE_HOUR_MILLIS;
+    private static final String DEFAULT_PERSONAL_FEATURE = "适度幽默";
+    private static final String DEFAULT_OCCUPATION = "软件开发";
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Value("${auth.token.user-whitelist:}")
@@ -116,6 +118,9 @@ public class UserAuthServiceImpl implements UserAuthService {
         cacheUser.setEmail(user.getEmail());
         cacheUser.setPhone(user.getPhone());
         cacheUser.setNickname(user.getNickname());
+        cacheUser.setBirthYear(user.getBirthYear());
+        cacheUser.setPersonalFeature(user.getPersonalFeature());
+        cacheUser.setOccupation(user.getOccupation());
         cacheUser.setTenantId(user.getTenantId());
         cacheUser.setRoleCodes(user.getRoleCodes());
         cacheManager.set(infoKey, cacheUser, ttl);
@@ -148,6 +153,8 @@ public class UserAuthServiceImpl implements UserAuthService {
         d.setUsername(phone);
         d.setPhone(phone);
         d.setNickname(normalize(registerRequest.getNickname()));
+        d.setPersonalFeature(DEFAULT_PERSONAL_FEATURE);
+        d.setOccupation(DEFAULT_OCCUPATION);
         d.setPassword(encoded);
         d.setSalt(salt);
         d.setStatus(1);
@@ -164,6 +171,8 @@ public class UserAuthServiceImpl implements UserAuthService {
         result.setPhone(phone);
         result.setNickname(normalize(registerRequest.getNickname()));
         result.setStatus(1);
+        result.setPersonalFeature(DEFAULT_PERSONAL_FEATURE);
+        result.setOccupation(DEFAULT_OCCUPATION);
         result.setRoleCodes(List.of("USER"));
         return Result.success(result);
     }
@@ -195,6 +204,9 @@ public class UserAuthServiceImpl implements UserAuthService {
         m.setNickname(d.getNickname());
         m.setPassword(d.getPassword());
         m.setStatus(d.getStatus());
+        m.setBirthYear(d.getBirthYear());
+        m.setPersonalFeature(d.getPersonalFeature());
+        m.setOccupation(d.getOccupation());
         m.setTenantId(d.getTenantId());
         m.setRoleCodes(d.getRoleCodes());
         return m;
@@ -236,6 +248,11 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     private static String normalize(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private static String normalizeToNull(String value) {
+        String normalized = normalize(value);
+        return normalized.isEmpty() ? null : normalized;
     }
 
     /**
@@ -422,6 +439,9 @@ public class UserAuthServiceImpl implements UserAuthService {
         d.setPhone(phone);
         d.setNickname(userAuth.getNickname());
         d.setStatus(userAuth.getStatus());
+        d.setBirthYear(userAuth.getBirthYear());
+        d.setPersonalFeature(normalizeToNull(userAuth.getPersonalFeature()));
+        d.setOccupation(normalizeToNull(userAuth.getOccupation()));
         Result<Boolean> updated = userManager.updateUser(d);
         if (!updated.isSuccess() || !Boolean.TRUE.equals(updated.getResult())) {
             return Result.failure(updated.getMessage());

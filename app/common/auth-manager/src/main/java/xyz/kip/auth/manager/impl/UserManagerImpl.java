@@ -75,6 +75,9 @@ public class UserManagerImpl implements UserManager {
         e.setSalt(user.getSalt());
         e.setStatus(user.getStatus());
         e.setRoleCode(firstRoleCode(user.getRoleCodes()));
+        e.setBirthYear(user.getBirthYear());
+        e.setPersonalFeature(user.getPersonalFeature());
+        e.setOccupation(user.getOccupation());
         e.setTenantId("1");
         e.setCreateBy("system");
         e.setUpdateBy("system");
@@ -96,6 +99,9 @@ public class UserManagerImpl implements UserManager {
         e.setEmail(user.getEmail());
         e.setStatus(user.getStatus());
         e.setRoleCode(firstRoleCode(user.getRoleCodes()));
+        e.setBirthYear(user.getBirthYear());
+        e.setPersonalFeature(user.getPersonalFeature());
+        e.setOccupation(user.getOccupation());
         e.setUpdateBy("system");
         int rows = userMapper.update(e);
         return rows > 0 ? Result.success(true) : Result.failure("更新用户失败");
@@ -148,6 +154,9 @@ public class UserManagerImpl implements UserManager {
         d.setPassword(entity.getPassword());
         d.setSalt(entity.getSalt());
         d.setStatus(entity.getStatus());
+        d.setBirthYear(entity.getBirthYear());
+        d.setPersonalFeature(entity.getPersonalFeature());
+        d.setOccupation(entity.getOccupation());
         d.setTenantId(entity.getTenantId());
         d.setRoleCodes(roleCodes(entity.getRoleCode()));
         return d;

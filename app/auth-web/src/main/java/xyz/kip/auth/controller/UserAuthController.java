@@ -447,6 +447,9 @@ public class UserAuthController {
         response.setPhone(model.getPhone());
         response.setNickname(model.getNickname());
         response.setStatus(model.getStatus());
+        response.setBirthYear(model.getBirthYear());
+        response.setPersonalFeature(model.getPersonalFeature());
+        response.setOccupation(model.getOccupation());
         response.setTenantId(model.getTenantId());
         response.setRoleCodes(model.getRoleCodes());
         return response;
@@ -460,6 +463,9 @@ public class UserAuthController {
         response.setPhone(model.getPhone());
         response.setNickname(model.getNickname());
         response.setStatus(model.getStatus());
+        response.setBirthYear(model.getBirthYear());
+        response.setPersonalFeature(model.getPersonalFeature());
+        response.setOccupation(model.getOccupation());
         response.setTenantId(model.getTenantId());
         response.setRoleCodes(model.getRoleCodes());
         return response;
@@ -473,6 +479,9 @@ public class UserAuthController {
         model.setPhone(request.getPhone());
         model.setNickname(request.getNickname());
         model.setStatus(request.getStatus());
+        model.setBirthYear(request.getBirthYear());
+        model.setPersonalFeature(request.getPersonalFeature());
+        model.setOccupation(request.getOccupation());
         model.setTenantId(request.getTenantId());
         model.setRoleCodes(request.getRoleCodes());
         return model;

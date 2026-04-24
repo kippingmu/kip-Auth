@@ -54,6 +54,21 @@ public class UserEntity {
     private String roleCode;
 
     /**
+     * 出生年份
+     */
+    private Integer birthYear;
+
+    /**
+     * 个人特征
+     */
+    private String personalFeature;
+
+    /**
+     * 职业
+     */
+    private String occupation;
+
+    /**
      * 兼容旧数据，C端业务不再按租户隔离。
      */
     private String tenantId;
@@ -148,6 +163,30 @@ public class UserEntity {
 
     public void setRoleCode(String roleCode) {
         this.roleCode = roleCode;
+    }
+
+    public Integer getBirthYear() {
+        return birthYear;
+    }
+
+    public void setBirthYear(Integer birthYear) {
+        this.birthYear = birthYear;
+    }
+
+    public String getPersonalFeature() {
+        return personalFeature;
+    }
+
+    public void setPersonalFeature(String personalFeature) {
+        this.personalFeature = personalFeature;
+    }
+
+    public String getOccupation() {
+        return occupation;
+    }
+
+    public void setOccupation(String occupation) {
+        this.occupation = occupation;
     }
 
     public String getTenantId() {
