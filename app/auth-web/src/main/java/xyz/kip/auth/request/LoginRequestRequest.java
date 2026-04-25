@@ -9,9 +9,9 @@ import xyz.kip.open.common.base.ToString;
  */
 public class LoginRequestRequest extends ToString {
     /**
-     * 登录类型：PHONE-手机号，EMAIL-邮箱
+     * 认证类型：PHONE-手机号，EMAIL-邮箱
      */
-    private String loginType;
+    private String authType;
 
     /**
      * 手机号
@@ -28,12 +28,12 @@ public class LoginRequestRequest extends ToString {
      */
     private String password;
 
-    public String getLoginType() {
-        return loginType;
+    public String getAuthType() {
+        return authType;
     }
 
-    public void setLoginType(String loginType) {
-        this.loginType = loginType;
+    public void setAuthType(String authType) {
+        this.authType = authType;
     }
 
     public String getPhone() {

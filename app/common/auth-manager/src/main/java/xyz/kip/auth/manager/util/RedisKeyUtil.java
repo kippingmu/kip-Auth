@@ -81,24 +81,24 @@ public class RedisKeyUtil {
 
     /**
      * Generate verification code key.
-     * Format: "kip:auth:verify:code:{phone}"
+     * Format: "kip:auth:verify:code:{identifier}"
      *
-     * @param phone phone number
+     * @param identifier register identifier
      * @return verification code cache key
      */
-    public static String verifyCodeKey(String phone) {
-        return buildKey("verify", "code", phone);
+    public static String verifyCodeKey(String identifier) {
+        return buildKey("verify", "code", identifier);
     }
 
     /**
      * Generate registration verification send history key.
-     * Format: "kip:auth:verify:send:register:{phone}"
+     * Format: "kip:auth:verify:send:register:{identifier}"
      *
-     * @param phone phone number
+     * @param identifier register identifier
      * @return registration verification send history key
      */
-    public static String registerVerifySendKey(String phone) {
-        return buildKey("verify", "send", "register", phone);
+    public static String registerVerifySendKey(String identifier) {
+        return buildKey("verify", "send", "register", identifier);
     }
 
     /**

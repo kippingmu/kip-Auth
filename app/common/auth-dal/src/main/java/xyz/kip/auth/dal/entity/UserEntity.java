@@ -14,16 +14,6 @@ public class UserEntity {
     private Long id;
 
     /**
-     * 用户ID
-     */
-    private String userId;
-
-    /**
-     * 兼容字段：C端新用户默认写入手机号。
-     */
-    private String username;
-
-    /**
      * 手机号
      */
     private String phone;
@@ -32,6 +22,11 @@ public class UserEntity {
      * 邮箱
      */
     private String email;
+
+    /**
+     * 姓名
+     */
+    private String name;
 
     /**
      * 加密后的密码
@@ -49,7 +44,7 @@ public class UserEntity {
     private Integer status;
 
     /**
-     * C 端用户角色编码：USER-普通用户，ADMIN-管理员
+     * 用户角色编码：USER-普通用户，ADMIN-管理员
      */
     private String roleCode;
 
@@ -69,11 +64,6 @@ public class UserEntity {
     private String occupation;
 
     /**
-     * 兼容旧数据，C端业务不再按租户隔离。
-     */
-    private String tenantId;
-
-    /**
      * 创建时间
      */
     private LocalDateTime createTime;
@@ -86,12 +76,12 @@ public class UserEntity {
     /**
      * 创建人
      */
-    private String createBy;
+    private Long createBy;
 
     /**
      * 更新人
      */
-    private String updateBy;
+    private Long updateBy;
 
     public Long getId() {
         return id;
@@ -99,22 +89,6 @@ public class UserEntity {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getPhone() {
@@ -131,6 +105,14 @@ public class UserEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPassword() {
@@ -189,14 +171,6 @@ public class UserEntity {
         this.occupation = occupation;
     }
 
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
     public LocalDateTime getCreateTime() {
         return createTime;
     }
@@ -213,19 +187,19 @@ public class UserEntity {
         this.updateTime = updateTime;
     }
 
-    public String getCreateBy() {
+    public Long getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(String createBy) {
+    public void setCreateBy(Long createBy) {
         this.createBy = createBy;
     }
 
-    public String getUpdateBy() {
+    public Long getUpdateBy() {
         return updateBy;
     }
 
-    public void setUpdateBy(String updateBy) {
+    public void setUpdateBy(Long updateBy) {
         this.updateBy = updateBy;
     }
 }

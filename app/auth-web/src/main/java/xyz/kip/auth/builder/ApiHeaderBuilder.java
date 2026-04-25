@@ -15,7 +15,6 @@ public class ApiHeaderBuilder {
         h.setTraceId(req.getHeader("X-Trace-Id"));
         h.setAppId(req.getHeader("X-App-Id"));
         h.setUserId(req.getHeader("X-User-Id"));
-        h.setTenantId(req.getHeader("X-Tenant-Id"));
         h.setTs(System.currentTimeMillis());
         return h;
     }

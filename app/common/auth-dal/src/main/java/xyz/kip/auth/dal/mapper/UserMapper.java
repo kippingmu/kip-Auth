@@ -13,29 +13,28 @@ import xyz.kip.auth.dal.entity.UserEntity;
 public interface UserMapper {
 
     /**
-     * 根据用户ID查询用户.
+     * 根据主键查询用户.
      *
-     * @param userId 用户ID
+     * @param id 主键ID
      * @return 用户实体
      */
-    UserEntity selectByUserId(@Param("userId") String userId);
+    UserEntity selectById(@Param("id") Long id);
 
     /**
-     * 根据手机号查询 C 端用户.
+     * 根据手机号查询用户.
      *
-     * @param username 手机号
+     * @param phone 手机号
      * @return 用户实体
      */
-    UserEntity selectByUsername(@Param("username") String username);
+    UserEntity selectByPhone(@Param("phone") String phone);
 
     /**
-     * 根据登录类型和账号查询 C 端用户.
+     * 根据邮箱查询用户.
      *
-     * @param loginType 登录类型：PHONE/EMAIL
-     * @param account 手机号或邮箱
+     * @param email 邮箱
      * @return 用户实体
      */
-    UserEntity selectByLoginAccount(@Param("loginType") String loginType, @Param("account") String account);
+    UserEntity selectByEmail(@Param("email") String email);
 
     /**
      * 插入用户.
@@ -56,31 +55,31 @@ public interface UserMapper {
     /**
      * 更新用户状态.
      *
-     * @param userId   用户ID
+     * @param id       主键ID
      * @param status   状态
      * @param updateBy 更新人
      * @return 影响行数
      */
-    int updateStatus(@Param("userId") String userId, @Param("status") Integer status, @Param("updateBy") String updateBy);
+    int updateStatus(@Param("id") Long id, @Param("status") Integer status, @Param("updateBy") Long updateBy);
 
     /**
      * 更新用户密码.
      *
-     * @param userId   用户ID
+     * @param id       主键ID
      * @param password 新密码
      * @param salt     新盐值
      * @param updateBy 更新人
      * @return 影响行数
      */
-    int updatePassword(@Param("userId") String userId, @Param("password") String password,
-                       @Param("salt") String salt, @Param("updateBy") String updateBy);
+    int updatePassword(@Param("id") Long id, @Param("password") String password,
+                       @Param("salt") String salt, @Param("updateBy") Long updateBy);
 
     /**
      * 删除用户.
      *
-     * @param userId 用户ID
+     * @param id 主键ID
      * @return 影响行数
      */
-    int deleteByUserId(@Param("userId") String userId);
+    int deleteById(@Param("id") Long id);
 
 }

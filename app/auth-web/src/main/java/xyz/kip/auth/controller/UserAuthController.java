@@ -16,6 +16,7 @@ import xyz.kip.auth.request.RegisterRequest;
 import xyz.kip.auth.request.UserAuthRequest;
 import xyz.kip.auth.response.LoginResponse;
 import xyz.kip.auth.response.UserAuthResponse;
+import xyz.kip.auth.manager.enums.AuthTyepEnum;
 import xyz.kip.auth.service.UserAuthService;
 import xyz.kip.auth.context.UserContext;
 import xyz.kip.auth.service.model.LoginRequestModel;
@@ -39,8 +40,6 @@ public class UserAuthController {
 
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String ADMIN_ROLE = "ADMIN";
-    private static final String LOGIN_TYPE_PHONE = "PHONE";
-    private static final String LOGIN_TYPE_EMAIL = "EMAIL";
     private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern VERIFY_CODE_PATTERN = Pattern.compile("^\\d{6}$");
@@ -53,36 +52,7 @@ public class UserAuthController {
         return new AbstractApiTemplate<LoginRequestRequest, LoginResponse>() {
             @Override
             protected Result<Void> doValidate(LoginRequestRequest request) {
-                if (request == null) {
-                    return Result.failure("请求体不能为空");
-                }
-                String loginType = normalizeLoginType(request.getLoginType());
-                if (isBlank(loginType)) {
-                    return Result.failure("登录类型不能为空");
-                }
-                if (!LOGIN_TYPE_PHONE.equals(loginType) && !LOGIN_TYPE_EMAIL.equals(loginType)) {
-                    return Result.failure("登录类型不正确");
-                }
-                if (LOGIN_TYPE_PHONE.equals(loginType)) {
-                    if (isBlank(request.getPhone())) {
-                        return Result.failure("手机号不能为空");
-                    }
-                    if (!isValidPhone(request.getPhone())) {
-                        return Result.failure("手机号格式不正确");
-                    }
-                }
-                if (LOGIN_TYPE_EMAIL.equals(loginType)) {
-                    if (isBlank(request.getEmail())) {
-                        return Result.failure("邮箱不能为空");
-                    }
-                    if (!isValidEmail(request.getEmail())) {
-                        return Result.failure("邮箱格式不正确");
-                    }
-                }
-                if (isBlank(request.getPassword())) {
-                    return Result.failure("密码不能为空");
-                }
-                return null;
+                return validateLoginRequest(request);
             }
 
             @Override
@@ -97,47 +67,20 @@ public class UserAuthController {
     }
 
     @PostMapping("/register")
-    public Result<UserAuthRequest> register(@RequestBody RegisterRequest req) {
-        return new AbstractApiTemplate<RegisterRequest, UserAuthRequest>() {
+    public Result<UserAuthResponse> register(@RequestBody RegisterRequest req) {
+        return new AbstractApiTemplate<RegisterRequest, UserAuthResponse>() {
             @Override
             protected Result<Void> doValidate(RegisterRequest request) {
-                if (request == null) {
-                    return Result.failure("请求体不能为空");
-                }
-                if (isBlank(request.getPhone())) {
-                    return Result.failure("手机号不能为空");
-                }
-                if (!isValidPhone(request.getPhone())) {
-                    return Result.failure("手机号格式不正确");
-                }
-                if (isBlank(request.getPassword())) {
-                    return Result.failure("密码不能为空");
-                }
-                if (request.getPassword().length() < 8) {
-                    return Result.failure("密码至少8位");
-                }
-                if (isBlank(request.getConfirmPassword())) {
-                    return Result.failure("确认密码不能为空");
-                }
-                if (!request.getPassword().equals(request.getConfirmPassword())) {
-                    return Result.failure("两次输入的密码不一致");
-                }
-                if (isBlank(request.getVerifyCode())) {
-                    return Result.failure("验证码不能为空");
-                }
-                if (!VERIFY_CODE_PATTERN.matcher(request.getVerifyCode().trim()).matches()) {
-                    return Result.failure("验证码必须是6位数字");
-                }
-                return null;
+                return validateRegisterRequest(request, true, true);
             }
 
             @Override
-            protected Result<UserAuthRequest> execute(RegisterRequest request) {
+            protected Result<UserAuthResponse> execute(RegisterRequest request) {
                 Result<UserAuthModel> result = userAuthService.register(toRegisterModel(request));
                 if (!result.isSuccess() || result.getResult() == null) {
                     return Result.failure(result.getMessage());
                 }
-                return Result.success(toUserAuthRequest(result.getResult()));
+                return Result.success(toUserAuthResponse(result.getResult()));
             }
         }.handle(req);
     }
@@ -147,28 +90,7 @@ public class UserAuthController {
         return new AbstractApiTemplate<RegisterRequest, String>() {
             @Override
             protected Result<Void> doValidate(RegisterRequest request) {
-                if (request == null) {
-                    return Result.failure("请求体不能为空");
-                }
-                if (isBlank(request.getPhone())) {
-                    return Result.failure("手机号不能为空");
-                }
-                if (!isValidPhone(request.getPhone())) {
-                    return Result.failure("手机号格式不正确");
-                }
-                if (isBlank(request.getPassword())) {
-                    return Result.failure("密码不能为空");
-                }
-                if (request.getPassword().length() < 8) {
-                    return Result.failure("密码至少8位");
-                }
-                if (isBlank(request.getConfirmPassword())) {
-                    return Result.failure("确认密码不能为空");
-                }
-                if (!request.getPassword().equals(request.getConfirmPassword())) {
-                    return Result.failure("两次输入的密码不一致");
-                }
-                return null;
+                return validateRegisterRequest(request, false, false);
             }
 
             @Override
@@ -354,8 +276,8 @@ public class UserAuthController {
         }.handle(userId);
     }
 
-    @GetMapping("/user/name/{username}")
-    public Result<UserAuthResponse> getUserByName(@PathVariable String username) {
+    @GetMapping("/user/email/{email:.+}")
+    public Result<UserAuthResponse> getUserByEmail(@PathVariable String email) {
         return new AbstractApiTemplate<String, UserAuthResponse>() {
             @Override
             protected Result<Void> doValidate(String request) {
@@ -364,20 +286,49 @@ public class UserAuthController {
                     return adminRoleValidation;
                 }
                 if (isBlank(request)) {
-                    return Result.failure("username不能为空");
+                    return Result.failure("email不能为空");
                 }
                 return null;
             }
 
             @Override
             protected Result<UserAuthResponse> execute(String request) {
-                Result<UserAuthModel> result = userAuthService.queryByUsername(request);
+                Result<UserAuthModel> result = userAuthService.queryByEmail(request);
                 if (!result.isSuccess() || result.getResult() == null) {
                     return Result.failure(result.getMessage());
                 }
                 return Result.success(toUserAuthResponse(result.getResult()));
             }
-        }.handle(username);
+        }.handle(email);
+    }
+
+    @GetMapping("/user/phone/{phone}")
+    public Result<UserAuthResponse> getUserByPhone(@PathVariable String phone) {
+        return new AbstractApiTemplate<String, UserAuthResponse>() {
+            @Override
+            protected Result<Void> doValidate(String request) {
+                Result<Void> adminRoleValidation = validateAdminRole();
+                if (adminRoleValidation != null) {
+                    return adminRoleValidation;
+                }
+                if (isBlank(request)) {
+                    return Result.failure("phone不能为空");
+                }
+                if (!isValidPhone(request)) {
+                    return Result.failure("手机号格式不正确");
+                }
+                return null;
+            }
+
+            @Override
+            protected Result<UserAuthResponse> execute(String request) {
+                Result<UserAuthModel> result = userAuthService.queryByPhone(request);
+                if (!result.isSuccess() || result.getResult() == null) {
+                    return Result.failure(result.getMessage());
+                }
+                return Result.success(toUserAuthResponse(result.getResult()));
+            }
+        }.handle(phone);
     }
 
     @PutMapping("/user")
@@ -447,8 +398,7 @@ public class UserAuthController {
 
     private LoginRequestModel toLoginModel(LoginRequestRequest request) {
         LoginRequestModel model = new LoginRequestModel();
-        String loginType = normalizeLoginType(request.getLoginType());
-        model.setLoginType(loginType);
+        model.setAuthType(normalizeAuthType(request.getAuthType()));
         model.setPhone(trimToNull(request.getPhone()));
         model.setEmail(trimToNull(request.getEmail()));
         model.setPassword(request.getPassword());
@@ -458,10 +408,8 @@ public class UserAuthController {
     private LoginResponse toLoginResponse(LoginResponseModel model) {
         LoginResponse response = new LoginResponse();
         response.setUserId(model.getUserId());
-        response.setUsername(model.getUsername());
         response.setEmail(model.getEmail());
         response.setPhone(model.getPhone());
-        response.setNickname(model.getNickname());
         response.setToken(model.getToken());
         response.setTokenType(model.getTokenType());
         response.setExpiresIn(model.getExpiresIn());
@@ -471,42 +419,26 @@ public class UserAuthController {
 
     private RegisterRequestModel toRegisterModel(RegisterRequest request) {
         RegisterRequestModel model = new RegisterRequestModel();
+        model.setAuthType(normalizeAuthType(request.getAuthType()));
         model.setPassword(request.getPassword());
         model.setConfirmPassword(request.getConfirmPassword());
-        model.setPhone(request.getPhone());
-        model.setNickname(request.getNickname());
-        model.setVerifyCode(request.getVerifyCode());
+        model.setPhone(trimToNull(request.getPhone()));
+        model.setEmail(trimToNull(request.getEmail()));
+        model.setName(trimToNull(request.getName()));
+        model.setVerifyCode(trimToNull(request.getVerifyCode()));
         return model;
-    }
-
-    private UserAuthRequest toUserAuthRequest(UserAuthModel model) {
-        UserAuthRequest response = new UserAuthRequest();
-        response.setUserId(model.getUserId());
-        response.setUsername(model.getUsername());
-        response.setEmail(model.getEmail());
-        response.setPhone(model.getPhone());
-        response.setNickname(model.getNickname());
-        response.setStatus(model.getStatus());
-        response.setBirthYear(model.getBirthYear());
-        response.setPersonalFeature(model.getPersonalFeature());
-        response.setOccupation(model.getOccupation());
-        response.setTenantId(model.getTenantId());
-        response.setRoleCodes(model.getRoleCodes());
-        return response;
     }
 
     private UserAuthResponse toUserAuthResponse(UserAuthModel model) {
         UserAuthResponse response = new UserAuthResponse();
         response.setUserId(model.getUserId());
-        response.setUsername(model.getUsername());
         response.setEmail(model.getEmail());
         response.setPhone(model.getPhone());
-        response.setNickname(model.getNickname());
+        response.setName(model.getName());
         response.setStatus(model.getStatus());
         response.setBirthYear(model.getBirthYear());
         response.setPersonalFeature(model.getPersonalFeature());
         response.setOccupation(model.getOccupation());
-        response.setTenantId(model.getTenantId());
         response.setRoleCodes(model.getRoleCodes());
         return response;
     }
@@ -514,15 +446,13 @@ public class UserAuthController {
     private UserAuthModel toUserAuthModel(UserAuthRequest request) {
         UserAuthModel model = new UserAuthModel();
         model.setUserId(request.getUserId());
-        model.setUsername(request.getUsername());
         model.setEmail(request.getEmail());
         model.setPhone(request.getPhone());
-        model.setNickname(request.getNickname());
+        model.setName(request.getName());
         model.setStatus(request.getStatus());
         model.setBirthYear(request.getBirthYear());
         model.setPersonalFeature(request.getPersonalFeature());
         model.setOccupation(request.getOccupation());
-        model.setTenantId(request.getTenantId());
         model.setRoleCodes(request.getRoleCodes());
         return model;
     }
@@ -539,8 +469,137 @@ public class UserAuthController {
         return email != null && EMAIL_PATTERN.matcher(email.trim()).matches();
     }
 
-    private String normalizeLoginType(String loginType) {
-        return loginType == null ? "" : loginType.trim().toUpperCase();
+    private Result<Void> validateLoginRequest(LoginRequestRequest request) {
+        if (request == null) {
+            return Result.failure("请求体不能为空");
+        }
+        Result<Void> authIdentityValidation = validateAuthIdentityRequest(
+                request.getAuthType(), request.getPhone(), request.getEmail(), false);
+        if (authIdentityValidation != null) {
+            return authIdentityValidation;
+        }
+        return validatePassword(request.getPassword(), false);
+    }
+
+    private Result<Void> validateRegisterRequest(RegisterRequest request, boolean requireName, boolean requireVerifyCode) {
+        if (request == null) {
+            return Result.failure("请求体不能为空");
+        }
+        Result<Void> authIdentityValidation = validateAuthIdentityRequest(
+                request.getAuthType(), request.getPhone(), request.getEmail(), true);
+        if (authIdentityValidation != null) {
+            return authIdentityValidation;
+        }
+        if (requireName && isBlank(request.getName())) {
+            return Result.failure("name不能为空");
+        }
+        Result<Void> passwordValidation = validatePassword(request.getPassword(), true);
+        if (passwordValidation != null) {
+            return passwordValidation;
+        }
+        Result<Void> confirmPasswordValidation = validateConfirmPassword(
+                request.getPassword(), request.getConfirmPassword());
+        if (confirmPasswordValidation != null) {
+            return confirmPasswordValidation;
+        }
+        if (!requireVerifyCode) {
+            return null;
+        }
+        return validateVerifyCode(request.getVerifyCode());
+    }
+
+    private Result<Void> validateAuthIdentityRequest(String authType, String phone, String email, boolean validateOptionalIdentity) {
+        Result<Void> authTypeValidation = validateAuthType(authType);
+        if (authTypeValidation != null) {
+            return authTypeValidation;
+        }
+        AuthTyepEnum parsedAuthType = parseAuthType(authType);
+        Result<Void> authIdentityValidation = validateRequiredIdentity(parsedAuthType, phone, email);
+        if (authIdentityValidation != null) {
+            return authIdentityValidation;
+        }
+        if (!validateOptionalIdentity) {
+            return null;
+        }
+        return validateOptionalIdentityFormat(phone, email);
+    }
+
+    private Result<Void> validateAuthType(String authType) {
+        if (isBlank(authType)) {
+            return Result.failure("认证类型不能为空");
+        }
+        if (parseAuthType(authType) == null) {
+            return Result.failure("认证类型不正确");
+        }
+        return null;
+    }
+
+    private Result<Void> validatePassword(String password, boolean requireMinLength) {
+        if (isBlank(password)) {
+            return Result.failure("密码不能为空");
+        }
+        if (requireMinLength && password.length() < 8) {
+            return Result.failure("密码至少8位");
+        }
+        return null;
+    }
+
+    private Result<Void> validateConfirmPassword(String password, String confirmPassword) {
+        if (isBlank(confirmPassword)) {
+            return Result.failure("确认密码不能为空");
+        }
+        if (!confirmPassword.equals(password)) {
+            return Result.failure("两次输入的密码不一致");
+        }
+        return null;
+    }
+
+    private Result<Void> validateVerifyCode(String verifyCode) {
+        if (isBlank(verifyCode)) {
+            return Result.failure("验证码不能为空");
+        }
+        if (!VERIFY_CODE_PATTERN.matcher(verifyCode.trim()).matches()) {
+            return Result.failure("验证码必须是6位数字");
+        }
+        return null;
+    }
+
+    private Result<Void> validateRequiredIdentity(AuthTyepEnum authType, String phone, String email) {
+        if (AuthTyepEnum.PHONE == authType) {
+            if (isBlank(phone)) {
+                return Result.failure("手机号不能为空");
+            }
+            if (!isValidPhone(phone)) {
+                return Result.failure("手机号格式不正确");
+            }
+        }
+        if (AuthTyepEnum.EMAIL == authType) {
+            if (isBlank(email)) {
+                return Result.failure("邮箱不能为空");
+            }
+            if (!isValidEmail(email)) {
+                return Result.failure("邮箱格式不正确");
+            }
+        }
+        return null;
+    }
+
+    private Result<Void> validateOptionalIdentityFormat(String phone, String email) {
+        if (!isBlank(phone) && !isValidPhone(phone)) {
+            return Result.failure("手机号格式不正确");
+        }
+        if (!isBlank(email) && !isValidEmail(email)) {
+            return Result.failure("邮箱格式不正确");
+        }
+        return null;
+    }
+
+    private AuthTyepEnum parseAuthType(String authType) {
+        return AuthTyepEnum.fromCode(authType);
+    }
+
+    private String normalizeAuthType(String authType) {
+        return AuthTyepEnum.codeOf(authType);
     }
 
     private String trimToNull(String value) {

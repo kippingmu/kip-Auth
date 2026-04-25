@@ -9,17 +9,15 @@ import java.util.List;
  */
 public class UserDomain extends ToString {
     private String userId;
-    private String username;
     private String phone;
     private String email;
-    private String nickname;
+    private String name;
     private String password;
     private String salt;
     private Integer status;
     private Integer birthYear;
     private String personalFeature;
     private String occupation;
-    private String tenantId;
     private List<String> roleCodes;
 
     public String getUserId() {
@@ -28,14 +26,6 @@ public class UserDomain extends ToString {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getPhone() {
@@ -54,12 +44,12 @@ public class UserDomain extends ToString {
         this.email = email;
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getName() {
+        return name;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPassword() {
@@ -108,14 +98,6 @@ public class UserDomain extends ToString {
 
     public void setOccupation(String occupation) {
         this.occupation = occupation;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public List<String> getRoleCodes() {

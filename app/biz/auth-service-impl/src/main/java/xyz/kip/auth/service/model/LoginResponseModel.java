@@ -16,11 +16,6 @@ public class LoginResponseModel extends ToString {
     private String userId;
 
     /**
-     * 用户名
-     */
-    private String username;
-
-    /**
      * 邮箱
      */
     private String email;
@@ -29,11 +24,6 @@ public class LoginResponseModel extends ToString {
      * 手机号
      */
     private String phone;
-
-    /**
-     * 昵称
-     */
-    private String nickname;
 
     /**
      * JWT token
@@ -59,14 +49,6 @@ public class LoginResponseModel extends ToString {
         this.userId = userId;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -81,14 +63,6 @@ public class LoginResponseModel extends ToString {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
     }
 
     public String getToken() {

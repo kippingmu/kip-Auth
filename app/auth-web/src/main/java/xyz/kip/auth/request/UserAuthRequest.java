@@ -16,16 +16,6 @@ public class UserAuthRequest extends ToString {
     private String userId;
 
     /**
-     * 用户名/手机号
-     */
-    private String username;
-
-    /**
-     * 密码
-     */
-    private String password;
-
-    /**
      * 邮箱
      */
     private String email;
@@ -36,9 +26,9 @@ public class UserAuthRequest extends ToString {
     private String phone;
 
     /**
-     * 昵称
+     * 姓名
      */
-    private String nickname;
+    private String name;
 
     /**
      * 账号状态：0-禁用，1-启用
@@ -60,10 +50,6 @@ public class UserAuthRequest extends ToString {
      */
     private String occupation;
 
-    /**
-     * 租户ID
-     */
-    private String tenantId;
     private List<String> roleCodes;
 
     public String getUserId() {
@@ -72,22 +58,6 @@ public class UserAuthRequest extends ToString {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getEmail() {
@@ -106,12 +76,12 @@ public class UserAuthRequest extends ToString {
         this.phone = phone;
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getName() {
+        return name;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Integer getStatus() {
@@ -144,14 +114,6 @@ public class UserAuthRequest extends ToString {
 
     public void setOccupation(String occupation) {
         this.occupation = occupation;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public List<String> getRoleCodes() {

@@ -9,14 +9,14 @@ import xyz.kip.open.common.base.Result;
  */
 public interface UserManager {
     /**
-     * Find user by username and tenant.
+     * Find user by phone.
      */
-    Result<UserDomain> findByUsername(String username);
+    Result<UserDomain> findByPhone(String phone);
 
     /**
-     * Find C-end user by login type and account.
+     * Find user by email.
      */
-    Result<UserDomain> findByLoginAccount(String loginType, String account);
+    Result<UserDomain> findByEmail(String email);
 
     /**
      * Find user by userId.
@@ -26,7 +26,7 @@ public interface UserManager {
     /**
      * Create new user.
      */
-    Result<Boolean> createUser(UserDomain user);
+    Result<UserDomain> createUser(UserDomain user);
 
     /**
      * Update existing user basic fields.
@@ -36,12 +36,12 @@ public interface UserManager {
     /**
      * Update user status.
      */
-    Result<Boolean> updateStatus(String userId, Integer status, String updateBy);
+    Result<Boolean> updateStatus(String userId, Integer status, Long updateBy);
 
     /**
      * Update user password and salt.
      */
-    Result<Boolean> updatePassword(String userId, String encodedPassword, String salt, String updateBy);
+    Result<Boolean> updatePassword(String userId, String encodedPassword, String salt, Long updateBy);
 
     /**
      * Delete user by userId.

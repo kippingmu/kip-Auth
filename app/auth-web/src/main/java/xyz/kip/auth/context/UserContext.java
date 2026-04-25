@@ -6,8 +6,6 @@ package xyz.kip.auth.context;
 public class UserContext {
     private static final ThreadLocal<String> USER_ID_HOLDER = new ThreadLocal<>();
     private static final ThreadLocal<String> USER_ROLES_HOLDER = new ThreadLocal<>();
-    private static final ThreadLocal<String> USERNAME_HOLDER = new ThreadLocal<>();
-    private static final ThreadLocal<String> TENANT_ID_HOLDER = new ThreadLocal<>();
 
     public static void setUserId(String userId) {
         USER_ID_HOLDER.set(userId);
@@ -25,26 +23,8 @@ public class UserContext {
         return USER_ROLES_HOLDER.get();
     }
 
-    public static void setUsername(String username) {
-        USERNAME_HOLDER.set(username);
-    }
-
-    public static String getUsername() {
-        return USERNAME_HOLDER.get();
-    }
-
-    public static void setTenantId(String tenantId) {
-        TENANT_ID_HOLDER.set(tenantId);
-    }
-
-    public static String getTenantId() {
-        return TENANT_ID_HOLDER.get();
-    }
-
     public static void clear() {
         USER_ID_HOLDER.remove();
         USER_ROLES_HOLDER.remove();
-        USERNAME_HOLDER.remove();
-        TENANT_ID_HOLDER.remove();
     }
 }

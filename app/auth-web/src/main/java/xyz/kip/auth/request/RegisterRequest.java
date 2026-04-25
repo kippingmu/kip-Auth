@@ -9,6 +9,11 @@ import xyz.kip.open.common.base.ToString;
  */
 public class RegisterRequest extends ToString {
     /**
+     * 认证类型：PHONE-手机号，EMAIL-邮箱
+     */
+    private String authType;
+
+    /**
      * 密码
      */
     private String password;
@@ -24,14 +29,27 @@ public class RegisterRequest extends ToString {
     private String phone;
 
     /**
-     * 昵称
+     * 邮箱
      */
-    private String nickname;
+    private String email;
+
+    /**
+     * 姓名
+     */
+    private String name;
 
     /**
      * 验证码
      */
     private String verifyCode;
+
+    public String getAuthType() {
+        return authType;
+    }
+
+    public void setAuthType(String authType) {
+        this.authType = authType;
+    }
 
     public String getPassword() {
         return password;
@@ -57,12 +75,20 @@ public class RegisterRequest extends ToString {
         this.phone = phone;
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getEmail() {
+        return email;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getVerifyCode() {
